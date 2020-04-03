@@ -155,7 +155,7 @@ Section "Game" GAME
 		;	"$OUTDIR\TiberianDawn.exe" "" "" "" ""
 		;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Dune 2000${SUFFIX}.lnk" $OUTDIR\Dune2000.exe "" \
 		;	"$OUTDIR\Dune2000.exe" "" "" "" ""
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Tiberian Sun${SUFFIX}.lnk" $OUTDIR\TiberianSun.exe "" \
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Tiberian Sun.lnk" $OUTDIR\TiberianSun.exe "" \
 			"$OUTDIR\TiberianSun.exe" "" "" "" ""
 	!insertmacro MUI_STARTMENU_WRITE_END
 
@@ -193,7 +193,7 @@ Section "Desktop Shortcut" DESKTOPSHORTCUT
 	;	"$INSTDIR\TiberianDawn.exe" "" "" "" ""
 	;CreateShortCut "$DESKTOP\OpenRA - Dune 2000${SUFFIX}.lnk" $INSTDIR\Dune2000.exe "" \
 	;	"$INSTDIR\Dune2000.exe" "" "" "" ""
-	CreateShortCut "$DESKTOP\OpenRA - Tiberian Sun${SUFFIX}.lnk" $INSTDIR\TiberianSun.exe "" \
+	CreateShortCut "$DESKTOP\OpenRA - Tiberian Sun.lnk" $INSTDIR\TiberianSun.exe "" \
 		"$INSTDIR\TiberianSun.exe" "" "" "" ""
 SectionEnd
 
@@ -290,16 +290,16 @@ Function ${UN}Clean
 
 	; Clean up start menu: Delete all our icons, and the OpenRA folder
 	; *only* if we were the only installed version
-	Delete "$SMPROGRAMS\$StartMenuFolder\Red Alert${SUFFIX}.lnk"
-	Delete "$SMPROGRAMS\$StartMenuFolder\Tiberian Dawn${SUFFIX}.lnk"
-	Delete "$SMPROGRAMS\$StartMenuFolder\Dune 2000${SUFFIX}.lnk"
-	Delete "$SMPROGRAMS\$StartMenuFolder\Tiberian Sun${SUFFIX}.lnk"
+	;Delete "$SMPROGRAMS\$StartMenuFolder\Red Alert${SUFFIX}.lnk"
+	;Delete "$SMPROGRAMS\$StartMenuFolder\Tiberian Dawn${SUFFIX}.lnk"
+	;Delete "$SMPROGRAMS\$StartMenuFolder\Dune 2000${SUFFIX}.lnk"
+	Delete "$SMPROGRAMS\$StartMenuFolder\Tiberian Sun.lnk"
 	RMDir "$SMPROGRAMS\$StartMenuFolder"
 
-	Delete "$DESKTOP\OpenRA - Red Alert${SUFFIX}.lnk"
-	Delete "$DESKTOP\OpenRA - Tiberian Dawn${SUFFIX}.lnk"
-	Delete "$DESKTOP\OpenRA - Dune 2000${SUFFIX}.lnk"
-	Delete "$DESKTOP\OpenRA - Tiberian Sun${SUFFIX}.lnk"
+	;Delete "$DESKTOP\OpenRA - Red Alert${SUFFIX}.lnk"
+	;Delete "$DESKTOP\OpenRA - Tiberian Dawn${SUFFIX}.lnk"
+	;Delete "$DESKTOP\OpenRA - Dune 2000${SUFFIX}.lnk"
+	Delete "$DESKTOP\OpenRA - Tiberian Sun.lnk"
 	DeleteRegKey HKLM "Software\OpenRA${SUFFIX}"
 FunctionEnd
 !macroend
