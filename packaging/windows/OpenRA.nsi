@@ -86,6 +86,11 @@ Section "-Reg" Reg
 	WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}\DefaultIcon" "" "$INSTDIR\Dune2000.ico,0"
 	WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}\Shell\Open\Command" "" "$INSTDIR\Dune2000.exe Launch.URI=%1"
 
+	WriteRegStr HKLM "Software\Classes\openra-ts-${TAG}" "" "URL:Join OpenRA server"
+	WriteRegStr HKLM "Software\Classes\openra-ts-${TAG}" "URL Protocol" ""
+	WriteRegStr HKLM "Software\Classes\openra-ts-${TAG}\DefaultIcon" "" "$INSTDIR\TiberianSun.ico,0"
+	WriteRegStr HKLM "Software\Classes\openra-ts-${TAG}\Shell\Open\Command" "" "$INSTDIR\TiberianSun.exe Launch.URI=%1"
+
 	; Remove obsolete file associations
 	DeleteRegKey HKLM "Software\Classes\.orarep"
 	DeleteRegKey HKLM "Software\Classes\OpenRA_replay"
@@ -104,12 +109,14 @@ Section "Game" GAME
 	File /r "${SRCDIR}\mods\cnc"
 	File /r "${SRCDIR}\mods\d2k"
 	File /r "${SRCDIR}\mods\ra"
+	File /r "${SRCDIR}\mods\ts"
 	File /r "${SRCDIR}\mods\modcontent"
 
 	SetOutPath "$INSTDIR"
 	File "${SRCDIR}\RedAlert.exe"
 	File "${SRCDIR}\TiberianDawn.exe"
 	File "${SRCDIR}\Dune2000.exe"
+	File "${SRCDIR}\TiberianSun.exe"
 	File "${SRCDIR}\OpenRA.Game.exe"
 	File "${SRCDIR}\OpenRA.Game.exe.config"
 	File "${SRCDIR}\OpenRA.Utility.exe"
@@ -128,6 +135,7 @@ Section "Game" GAME
 	File "${SRCDIR}\RedAlert.ico"
 	File "${SRCDIR}\TiberianDawn.ico"
 	File "${SRCDIR}\Dune2000.ico"
+	File "${SRCDIR}\TiberianSun.ico"
 	File "${SRCDIR}\SDL2-CS.dll"
 	File "${SRCDIR}\OpenAL-CS.dll"
 	File "${SRCDIR}\global mix database.dat"
@@ -147,6 +155,8 @@ Section "Game" GAME
 			"$OUTDIR\TiberianDawn.exe" "" "" "" ""
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Dune 2000${SUFFIX}.lnk" $OUTDIR\Dune2000.exe "" \
 			"$OUTDIR\Dune2000.exe" "" "" "" ""
+		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Tiberian Sun${SUFFIX}.lnk" $OUTDIR\TiberianSun.exe "" \
+			"$OUTDIR\TiberianSun.exe" "" "" "" ""
 	!insertmacro MUI_STARTMENU_WRITE_END
 
 	SetOutPath "$INSTDIR\lua"
@@ -169,6 +179,8 @@ Section "Game" GAME
 	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" cnc --clear-invalid-mod-registrations system'
 	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" d2k --register-mod "$INSTDIR\Dune2000.exe" system'
 	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" d2k --clear-invalid-mod-registrations system'
+	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ts --register-mod "$INSTDIR\TiberianSun.exe" system'
+	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ts --clear-invalid-mod-registrations system'
 	SetShellVarContext current
 
 SectionEnd
@@ -181,6 +193,8 @@ Section "Desktop Shortcut" DESKTOPSHORTCUT
 		"$INSTDIR\TiberianDawn.exe" "" "" "" ""
 	CreateShortCut "$DESKTOP\OpenRA - Dune 2000${SUFFIX}.lnk" $INSTDIR\Dune2000.exe "" \
 		"$INSTDIR\Dune2000.exe" "" "" "" ""
+	CreateShortCut "$DESKTOP\OpenRA - Tiberian Sun${SUFFIX}.lnk" $INSTDIR\TiberianSun.exe "" \
+		"$INSTDIR\TiberianSun.exe" "" "" "" ""
 SectionEnd
 
 ;***************************
@@ -221,6 +235,7 @@ Function ${UN}Clean
 	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ra --unregister-mod system'
 	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" cnc --unregister-mod system'
 	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" d2k --unregister-mod system'
+	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ts --unregister-mod system'
 
 	RMDir /r $INSTDIR\mods
 	RMDir /r $INSTDIR\maps
@@ -229,6 +244,7 @@ Function ${UN}Clean
 	Delete $INSTDIR\RedAlert.exe
 	Delete $INSTDIR\TiberianDawn.exe
 	Delete $INSTDIR\Dune2000.exe
+	Delete $INSTDIR\TiberianSun.exe
 	Delete $INSTDIR\OpenRA.Game.exe
 	Delete $INSTDIR\OpenRA.Game.exe.config
 	Delete $INSTDIR\OpenRA.Utility.exe
@@ -247,6 +263,7 @@ Function ${UN}Clean
 	Delete $INSTDIR\RedAlert.ico
 	Delete $INSTDIR\TiberianDawn.ico
 	Delete $INSTDIR\Dune2000.ico
+	Delete $INSTDIR\TiberianSun.ico
 	Delete "$INSTDIR\global mix database.dat"
 	Delete $INSTDIR\MaxMind.Db.dll
 	Delete $INSTDIR\KopiLua.dll
@@ -264,6 +281,7 @@ Function ${UN}Clean
 	DeleteRegKey HKLM "Software\Classes\openra-ra-${TAG}"
 	DeleteRegKey HKLM "Software\Classes\openra-cnc-${TAG}"
 	DeleteRegKey HKLM "Software\Classes\openra-d2k-${TAG}"
+	DeleteRegKey HKLM "Software\Classes\openra-ts-${TAG}"
 
 	Delete $INSTDIR\uninstaller.exe
 	RMDir $INSTDIR
@@ -275,11 +293,13 @@ Function ${UN}Clean
 	Delete "$SMPROGRAMS\$StartMenuFolder\Red Alert${SUFFIX}.lnk"
 	Delete "$SMPROGRAMS\$StartMenuFolder\Tiberian Dawn${SUFFIX}.lnk"
 	Delete "$SMPROGRAMS\$StartMenuFolder\Dune 2000${SUFFIX}.lnk"
+	Delete "$SMPROGRAMS\$StartMenuFolder\Tiberian Sun${SUFFIX}.lnk"
 	RMDir "$SMPROGRAMS\$StartMenuFolder"
 
 	Delete "$DESKTOP\OpenRA - Red Alert${SUFFIX}.lnk"
 	Delete "$DESKTOP\OpenRA - Tiberian Dawn${SUFFIX}.lnk"
 	Delete "$DESKTOP\OpenRA - Dune 2000${SUFFIX}.lnk"
+	Delete "$DESKTOP\OpenRA - Tiberian Sun${SUFFIX}.lnk"
 	DeleteRegKey HKLM "Software\OpenRA${SUFFIX}"
 FunctionEnd
 !macroend

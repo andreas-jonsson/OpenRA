@@ -58,9 +58,10 @@ function build_platform()
 	makelauncher "${BUILTDIR}/RedAlert.exe" "Red Alert" "ra" RedAlert.ico $1
 	makelauncher "${BUILTDIR}/TiberianDawn.exe" "Tiberian Dawn" "cnc" TiberianDawn.ico $1
 	makelauncher "${BUILTDIR}/Dune2000.exe" "Dune 2000" "d2k" Dune2000.ico $1
+	makelauncher "${BUILTDIR}/TiberianSun.exe" "Tiberian Sun" "ts" TiberianSun.ico $1
 
 	# Windows specific files
-	cp OpenRA.ico RedAlert.ico TiberianDawn.ico Dune2000.ico "${BUILTDIR}"
+	cp OpenRA.ico RedAlert.ico TiberianDawn.ico Dune2000.ico TiberianSun.ico "${BUILTDIR}"
 	cp "${SRCDIR}/OpenRA.Game.exe.config" "${BUILTDIR}"
 
 	curl -s -L -O https://raw.githubusercontent.com/wiki/OpenRA/OpenRA/Changelog.md
