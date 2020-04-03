@@ -71,20 +71,20 @@ Section "-Reg" Reg
 	WriteRegStr HKLM "Software\OpenRA${SUFFIX}" "InstallDir" $INSTDIR
 
 	; Join server URL Scheme
-	WriteRegStr HKLM "Software\Classes\openra-ra-${TAG}" "" "URL:Join OpenRA server"
-	WriteRegStr HKLM "Software\Classes\openra-ra-${TAG}" "URL Protocol" ""
-	WriteRegStr HKLM "Software\Classes\openra-ra-${TAG}\DefaultIcon" "" "$INSTDIR\RedAlert.ico,0"
-	WriteRegStr HKLM "Software\Classes\openra-ra-${TAG}\Shell\Open\Command" "" "$INSTDIR\RedAlert.exe Launch.URI=%1"
+	;WriteRegStr HKLM "Software\Classes\openra-ra-${TAG}" "" "URL:Join OpenRA server"
+	;WriteRegStr HKLM "Software\Classes\openra-ra-${TAG}" "URL Protocol" ""
+	;WriteRegStr HKLM "Software\Classes\openra-ra-${TAG}\DefaultIcon" "" "$INSTDIR\RedAlert.ico,0"
+	;WriteRegStr HKLM "Software\Classes\openra-ra-${TAG}\Shell\Open\Command" "" "$INSTDIR\RedAlert.exe Launch.URI=%1"
 
-	WriteRegStr HKLM "Software\Classes\openra-cnc-${TAG}" "" "URL:Join OpenRA server"
-	WriteRegStr HKLM "Software\Classes\openra-cnc-${TAG}" "URL Protocol" ""
-	WriteRegStr HKLM "Software\Classes\openra-cnc-${TAG}\DefaultIcon" "" "$INSTDIR\TiberianDawn.ico,0"
-	WriteRegStr HKLM "Software\Classes\openra-cnc-${TAG}\Shell\Open\Command" "" "$INSTDIR\TiberianDawn.exe Launch.URI=%1"
+	;WriteRegStr HKLM "Software\Classes\openra-cnc-${TAG}" "" "URL:Join OpenRA server"
+	;WriteRegStr HKLM "Software\Classes\openra-cnc-${TAG}" "URL Protocol" ""
+	;WriteRegStr HKLM "Software\Classes\openra-cnc-${TAG}\DefaultIcon" "" "$INSTDIR\TiberianDawn.ico,0"
+	;WriteRegStr HKLM "Software\Classes\openra-cnc-${TAG}\Shell\Open\Command" "" "$INSTDIR\TiberianDawn.exe Launch.URI=%1"
 
-	WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}" "" "URL:Join OpenRA server"
-	WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}" "URL Protocol" ""
-	WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}\DefaultIcon" "" "$INSTDIR\Dune2000.ico,0"
-	WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}\Shell\Open\Command" "" "$INSTDIR\Dune2000.exe Launch.URI=%1"
+	;WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}" "" "URL:Join OpenRA server"
+	;WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}" "URL Protocol" ""
+	;WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}\DefaultIcon" "" "$INSTDIR\Dune2000.ico,0"
+	;WriteRegStr HKLM "Software\Classes\openra-d2k-${TAG}\Shell\Open\Command" "" "$INSTDIR\Dune2000.exe Launch.URI=%1"
 
 	WriteRegStr HKLM "Software\Classes\openra-ts-${TAG}" "" "URL:Join OpenRA server"
 	WriteRegStr HKLM "Software\Classes\openra-ts-${TAG}" "URL Protocol" ""
@@ -106,16 +106,16 @@ Section "Game" GAME
 	RMDir /r "$INSTDIR\mods"
 	SetOutPath "$INSTDIR\mods"
 	File /r "${SRCDIR}\mods\common"
-	File /r "${SRCDIR}\mods\cnc"
-	File /r "${SRCDIR}\mods\d2k"
-	File /r "${SRCDIR}\mods\ra"
+	;File /r "${SRCDIR}\mods\cnc"
+	;File /r "${SRCDIR}\mods\d2k"
+	;File /r "${SRCDIR}\mods\ra"
 	File /r "${SRCDIR}\mods\ts"
 	File /r "${SRCDIR}\mods\modcontent"
 
 	SetOutPath "$INSTDIR"
-	File "${SRCDIR}\RedAlert.exe"
-	File "${SRCDIR}\TiberianDawn.exe"
-	File "${SRCDIR}\Dune2000.exe"
+	;File "${SRCDIR}\RedAlert.exe"
+	;File "${SRCDIR}\TiberianDawn.exe"
+	;File "${SRCDIR}\Dune2000.exe"
 	File "${SRCDIR}\TiberianSun.exe"
 	File "${SRCDIR}\OpenRA.Game.exe"
 	File "${SRCDIR}\OpenRA.Game.exe.config"
@@ -132,9 +132,9 @@ Section "Game" GAME
 	File "${SRCDIR}\CHANGELOG.html"
 	File "${SRCDIR}\CONTRIBUTING.html"
 	File "${SRCDIR}\OpenRA.ico"
-	File "${SRCDIR}\RedAlert.ico"
-	File "${SRCDIR}\TiberianDawn.ico"
-	File "${SRCDIR}\Dune2000.ico"
+	;File "${SRCDIR}\RedAlert.ico"
+	;File "${SRCDIR}\TiberianDawn.ico"
+	;File "${SRCDIR}\Dune2000.ico"
 	File "${SRCDIR}\TiberianSun.ico"
 	File "${SRCDIR}\SDL2-CS.dll"
 	File "${SRCDIR}\OpenAL-CS.dll"
@@ -173,12 +173,12 @@ Section "Game" GAME
 
 	SetShellVarContext all
 	CreateDirectory "$APPDATA\OpenRA\ModMetadata"
-	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ra --register-mod "$INSTDIR\RedAlert.exe" system'
-	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ra --clear-invalid-mod-registrations system'
-	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" cnc --register-mod "$INSTDIR\TiberianDawn.exe" system'
-	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" cnc --clear-invalid-mod-registrations system'
-	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" d2k --register-mod "$INSTDIR\Dune2000.exe" system'
-	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" d2k --clear-invalid-mod-registrations system'
+	;nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ra --register-mod "$INSTDIR\RedAlert.exe" system'
+	;nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ra --clear-invalid-mod-registrations system'
+	;nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" cnc --register-mod "$INSTDIR\TiberianDawn.exe" system'
+	;nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" cnc --clear-invalid-mod-registrations system'
+	;nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" d2k --register-mod "$INSTDIR\Dune2000.exe" system'
+	;nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" d2k --clear-invalid-mod-registrations system'
 	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ts --register-mod "$INSTDIR\TiberianSun.exe" system'
 	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ts --clear-invalid-mod-registrations system'
 	SetShellVarContext current
@@ -232,18 +232,18 @@ SectionEnd
 
 !macro Clean UN
 Function ${UN}Clean
-	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ra --unregister-mod system'
-	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" cnc --unregister-mod system'
-	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" d2k --unregister-mod system'
+	;nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ra --unregister-mod system'
+	;nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" cnc --unregister-mod system'
+	;nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" d2k --unregister-mod system'
 	nsExec::ExecToLog '"$INSTDIR\OpenRA.Utility.exe" ts --unregister-mod system'
 
 	RMDir /r $INSTDIR\mods
 	RMDir /r $INSTDIR\maps
 	RMDir /r $INSTDIR\glsl
 	RMDir /r $INSTDIR\lua
-	Delete $INSTDIR\RedAlert.exe
-	Delete $INSTDIR\TiberianDawn.exe
-	Delete $INSTDIR\Dune2000.exe
+	;Delete $INSTDIR\RedAlert.exe
+	;Delete $INSTDIR\TiberianDawn.exe
+	;Delete $INSTDIR\Dune2000.exe
 	Delete $INSTDIR\TiberianSun.exe
 	Delete $INSTDIR\OpenRA.Game.exe
 	Delete $INSTDIR\OpenRA.Game.exe.config
@@ -278,9 +278,9 @@ Function ${UN}Clean
 	RMDir /r $INSTDIR\Support
 
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenRA${SUFFIX}"
-	DeleteRegKey HKLM "Software\Classes\openra-ra-${TAG}"
-	DeleteRegKey HKLM "Software\Classes\openra-cnc-${TAG}"
-	DeleteRegKey HKLM "Software\Classes\openra-d2k-${TAG}"
+	;DeleteRegKey HKLM "Software\Classes\openra-ra-${TAG}"
+	;DeleteRegKey HKLM "Software\Classes\openra-cnc-${TAG}"
+	;DeleteRegKey HKLM "Software\Classes\openra-d2k-${TAG}"
 	DeleteRegKey HKLM "Software\Classes\openra-ts-${TAG}"
 
 	Delete $INSTDIR\uninstaller.exe
