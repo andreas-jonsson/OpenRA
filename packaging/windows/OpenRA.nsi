@@ -149,12 +149,12 @@ Section "Game" GAME
 
 	!insertmacro MUI_STARTMENU_WRITE_BEGIN Application
 		CreateDirectory "$SMPROGRAMS\$StartMenuFolder"
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Red Alert${SUFFIX}.lnk" $OUTDIR\RedAlert.exe "" \
-			"$OUTDIR\RedAlert.exe" "" "" "" ""
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Tiberian Dawn${SUFFIX}.lnk" $OUTDIR\TiberianDawn.exe "" \
-			"$OUTDIR\TiberianDawn.exe" "" "" "" ""
-		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Dune 2000${SUFFIX}.lnk" $OUTDIR\Dune2000.exe "" \
-			"$OUTDIR\Dune2000.exe" "" "" "" ""
+		;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Red Alert${SUFFIX}.lnk" $OUTDIR\RedAlert.exe "" \
+		;	"$OUTDIR\RedAlert.exe" "" "" "" ""
+		;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Tiberian Dawn${SUFFIX}.lnk" $OUTDIR\TiberianDawn.exe "" \
+		;	"$OUTDIR\TiberianDawn.exe" "" "" "" ""
+		;CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Dune 2000${SUFFIX}.lnk" $OUTDIR\Dune2000.exe "" \
+		;	"$OUTDIR\Dune2000.exe" "" "" "" ""
 		CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Tiberian Sun${SUFFIX}.lnk" $OUTDIR\TiberianSun.exe "" \
 			"$OUTDIR\TiberianSun.exe" "" "" "" ""
 	!insertmacro MUI_STARTMENU_WRITE_END
@@ -187,12 +187,12 @@ SectionEnd
 
 Section "Desktop Shortcut" DESKTOPSHORTCUT
 	SetOutPath "$INSTDIR"
-	CreateShortCut "$DESKTOP\OpenRA - Red Alert${SUFFIX}.lnk" $INSTDIR\RedAlert.exe "" \
-		"$INSTDIR\RedAlert.exe" "" "" "" ""
-	CreateShortCut "$DESKTOP\OpenRA - Tiberian Dawn${SUFFIX}.lnk" $INSTDIR\TiberianDawn.exe "" \
-		"$INSTDIR\TiberianDawn.exe" "" "" "" ""
-	CreateShortCut "$DESKTOP\OpenRA - Dune 2000${SUFFIX}.lnk" $INSTDIR\Dune2000.exe "" \
-		"$INSTDIR\Dune2000.exe" "" "" "" ""
+	;CreateShortCut "$DESKTOP\OpenRA - Red Alert${SUFFIX}.lnk" $INSTDIR\RedAlert.exe "" \
+	;	"$INSTDIR\RedAlert.exe" "" "" "" ""
+	;CreateShortCut "$DESKTOP\OpenRA - Tiberian Dawn${SUFFIX}.lnk" $INSTDIR\TiberianDawn.exe "" \
+	;	"$INSTDIR\TiberianDawn.exe" "" "" "" ""
+	;CreateShortCut "$DESKTOP\OpenRA - Dune 2000${SUFFIX}.lnk" $INSTDIR\Dune2000.exe "" \
+	;	"$INSTDIR\Dune2000.exe" "" "" "" ""
 	CreateShortCut "$DESKTOP\OpenRA - Tiberian Sun${SUFFIX}.lnk" $INSTDIR\TiberianSun.exe "" \
 		"$INSTDIR\TiberianSun.exe" "" "" "" ""
 SectionEnd
