@@ -156,9 +156,10 @@ build_appimage() {
 	rm -rf "${APPDIR}"
 }
 
-build_appimage "ra" "Red Alert"
-build_appimage "cnc" "Tiberian Dawn"
-build_appimage "d2k" "Dune 2000"
+#build_appimage "ra" "Red Alert"
+#build_appimage "cnc" "Tiberian Dawn"
+#build_appimage "d2k" "Dune 2000"
+build_appimage "ts" "Tiberian Sun"
 
 # Clean up
 rm -rf openra-mod.temp openra-mod-server.temp openra-mod-utility.temp temp.desktop temp.xml AppRun.temp appimagetool-x86_64.AppImage squashfs-root "${BUILTDIR}"
