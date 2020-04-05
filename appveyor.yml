@@ -1,6 +1,10 @@
 version: 1.0.{build}
 image: Visual Studio 2017
 
+branches:
+  only:
+    - tiberiansun
+
 environment:
   CoverityProjectToken:
     secure: BYP5qnptMazSCwTwgiFHlfqZd7BM3bwTRq2Cbs++ofg=
@@ -71,6 +75,10 @@ after_test:
   - if not defined APPVEYOR_REPO_TAG_NAME set VERSION=%APPVEYOR_REPO_COMMIT:~0,7%
   - '"C:\Program Files (x86)\NSIS\makensis.exe" /DSRCDIR="%APPVEYOR_BUILD_FOLDER%" /DDEPSDIR="%APPVEYOR_BUILD_FOLDER%\thirdparty\download\windows" /DTAG="tiberiansun-%VERSION%" /DSUFFIX=" - Tiberian Sun" /V3 packaging/windows/OpenRA.nsi'
   - move /Y %APPVEYOR_BUILD_FOLDER%\packaging\windows\OpenRA.Setup.exe %APPVEYOR_BUILD_FOLDER%\OpenRA-TiberianSun.exe
+
+  # Upload to itch.io
+  - butler login
+  - butler push %APPVEYOR_BUILD_FOLDER%\OpenRA-TiberianSun.exe phix/tiberiansun:tiberiansun-windows --userversion %VERSION%
 
 artifacts:
   - path: OpenRA-TiberianSun.exe
