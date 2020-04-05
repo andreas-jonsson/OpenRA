@@ -79,12 +79,12 @@ after_test:
   # Upload to itch.io
   - curl -L -o butler.zip https://broth.itch.ovh/butler/windows-amd64/LATEST/archive/default && unzip butler.zip
   - butler login
-  - butler push %APPVEYOR_BUILD_FOLDER%\OpenRA-TiberianSun.exe phix/tiberiansun:tiberiansun-windows --userversion %VERSION%
+  - butler push %APPVEYOR_BUILD_FOLDER%\OpenRA-TiberianSun.exe phix/tiberiansun:tiberiansun-windows --userversion tiberiansun-%VERSION%
 
-artifacts:
-  - path: OpenRA-TiberianSun.exe
-    name: Installer
-  #- path: coverity.zip
-  #  name: Coverity Build
-  #- path: dupReport.html
-  #  name: dupFinder Report
+#artifacts:
+#  - path: OpenRA-TiberianSun.exe
+#    name: Installer
+#  - path: coverity.zip
+#    name: Coverity Build
+#  - path: dupReport.html
+#    name: dupFinder Report
