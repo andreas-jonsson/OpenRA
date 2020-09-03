@@ -17,11 +17,9 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits.Render
 {
-	public abstract class SelectionDecorationsBaseInfo : ITraitInfo
+	public abstract class SelectionDecorationsBaseInfo : TraitInfo
 	{
 		public readonly Color SelectionBoxColor = Color.White;
-
-		public abstract object Create(ActorInitializer init);
 	}
 
 	public abstract class SelectionDecorationsBase : ISelectionDecorations, IRenderAnnotations, INotifyCreated
@@ -109,7 +107,15 @@ namespace OpenRA.Mods.Common.Traits.Render
 				foreach (var r in RenderSelectionBars(self, wr, displayHealth, displayExtra))
 					yield return r;
 
-			var renderDecorations = self.World.Selection.Contains(self) ? selectedDecorations : decorations;
+			if (selected && self.World.LocalPlayer != null && self.World.LocalPlayer.PlayerActor.Trait<DeveloperMode>().PathDebug)
+				yield return new TargetLineRenderable(ActivityTargetPath(self), Color.Green);
+
+			// Hide decorations for spectators that zoom out further than the normal minimum level
+			// This avoids graphical glitches with pip rows and icons overlapping the selection box
+			if (wr.Viewport.Zoom < wr.Viewport.MinZoom)
+				yield break;
+
+			var renderDecorations = selected ? selectedDecorations : decorations;
 			foreach (var kv in renderDecorations)
 			{
 				var pos = GetDecorationPosition(self, wr, kv.Key);
@@ -117,13 +123,6 @@ namespace OpenRA.Mods.Common.Traits.Render
 					foreach (var rr in r.RenderDecoration(self, wr, pos))
 						yield return rr;
 			}
-
-			// Target lines and pips are always only displayed for selected allied actors
-			if (!selected || !self.Owner.IsAlliedWith(wr.World.RenderPlayer))
-				yield break;
-
-			if (self.World.LocalPlayer != null && self.World.LocalPlayer.PlayerActor.Trait<DeveloperMode>().PathDebug)
-				yield return new TargetLineRenderable(ActivityTargetPath(self), Color.Green);
 		}
 
 		IEnumerable<IRenderable> ISelectionDecorations.RenderSelectionAnnotations(Actor self, WorldRenderer worldRenderer, Color color)

@@ -9,10 +9,8 @@
  */
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Activities;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Primitives;
 using OpenRA.Traits;
@@ -27,7 +25,10 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Locomotor used by the transformed actor. Must be defined on the World actor.")]
 		public readonly string Locomotor = null;
 
+		[Desc("Cursor to display when a move order can be issued at target location.")]
 		public readonly string Cursor = "move";
+
+		[Desc("Cursor to display when a move order cannot be issued at target location.")]
 		public readonly string BlockedCursor = "move-blocked";
 
 		[VoiceReference]
@@ -109,8 +110,8 @@ namespace OpenRA.Mods.Common.Traits
 
 				// Manually manage the inner activity queue
 				var activity = currentTransform ?? transform.GetTransformActivity(self);
-				if (!order.Queued && activity.NextActivity != null)
-					activity.NextActivity.Cancel(self);
+				if (!order.Queued)
+					activity.NextActivity?.Cancel(self);
 
 				activity.Queue(new IssueOrderAfterTransform("Move", order.Target, Color.Green));
 

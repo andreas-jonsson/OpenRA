@@ -61,6 +61,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		bool addBotOnMapLoad;
 		bool disableTeamChat;
 		bool teamChat;
+		bool updateDiscordStatus = true;
 
 		readonly string chatLineSound = ChromeMetrics.Get<string>("ChatLineSound");
 
@@ -82,7 +83,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 					});
 				};
 
-				Action<string> onRetry = password => ConnectionLogic.Connect(om.Host, om.Port, password, onConnect, onExit);
+				Action<string> onRetry = password => ConnectionLogic.Connect(om.Endpoint, password, onConnect, onExit);
 
 				var switchPanel = om.ServerExternalMod != null ? "CONNECTION_SWITCHMOD_PANEL" : "CONNECTIONFAILED_PANEL";
 				Ui.OpenWindow(switchPanel, new WidgetArgs()
@@ -116,6 +117,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			orderManager.AddChatLine += AddChatLine;
 			Game.LobbyInfoChanged += UpdateCurrentMap;
 			Game.LobbyInfoChanged += UpdatePlayerList;
+			Game.LobbyInfoChanged += UpdateDiscordStatus;
 			Game.BeforeGameStart += OnGameStart;
 			Game.ConnectionStateChanged += ConnectionStateChanged;
 
@@ -448,8 +450,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			if (skirmishMode)
 				addBotOnMapLoad = true;
 
-			MiniYaml yaml;
-			if (logicArgs.TryGetValue("ChatLineSound", out yaml))
+			if (logicArgs.TryGetValue("ChatLineSound", out var yaml))
 				chatLineSound = yaml.Value;
 		}
 
@@ -462,6 +463,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 				orderManager.AddChatLine -= AddChatLine;
 				Game.LobbyInfoChanged -= UpdateCurrentMap;
 				Game.LobbyInfoChanged -= UpdatePlayerList;
+				Game.LobbyInfoChanged -= UpdateDiscordStatus;
 				Game.BeforeGameStart -= OnGameStart;
 				Game.ConnectionStateChanged -= ConnectionStateChanged;
 			}
@@ -743,9 +745,56 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			tabCompletion.Names = orderManager.LobbyInfo.Clients.Select(c => c.Name).Distinct().ToList();
 		}
 
+		void UpdateDiscordStatus()
+		{
+			var mapTitle = map.Title;
+			var numberOfPlayers = 0;
+			var slots = 0;
+
+			if (!skirmishMode)
+			{
+				foreach (var kv in orderManager.LobbyInfo.Slots)
+				{
+					if (kv.Value.Closed)
+						continue;
+
+					slots++;
+					var client = orderManager.LobbyInfo.ClientInSlot(kv.Key);
+
+					if (client != null)
+						numberOfPlayers++;
+				}
+			}
+
+			if (updateDiscordStatus)
+			{
+				string secret = null;
+				if (orderManager.LobbyInfo.GlobalSettings.Dedicated)
+				{
+					var endpoint = orderManager.Endpoint.GetConnectEndPoints().First();
+					secret = string.Concat(endpoint.Address, "|", endpoint.Port);
+				}
+
+				var state = skirmishMode ? DiscordState.InSkirmishLobby : DiscordState.InMultiplayerLobby;
+				DiscordService.UpdateStatus(state, mapTitle, secret, numberOfPlayers, slots);
+
+				updateDiscordStatus = false;
+			}
+			else
+			{
+				if (!skirmishMode)
+					DiscordService.UpdatePlayers(numberOfPlayers, slots);
+				DiscordService.UpdateDetails(mapTitle);
+			}
+		}
+
 		void OnGameStart()
 		{
 			Ui.CloseWindow();
+
+			var state = skirmishMode ? DiscordState.PlayingSkirmish : DiscordState.PlayingMultiplayer;
+			DiscordService.UpdateStatus(state);
+
 			onStart();
 		}
 	}

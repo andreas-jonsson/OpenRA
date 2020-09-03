@@ -20,12 +20,12 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("Required for the map editor to work. Attach this to the world actor.")]
-	public class EditorActorLayerInfo : ITraitInfo
+	public class EditorActorLayerInfo : TraitInfo
 	{
 		[Desc("Size of partition bins (world pixels)")]
 		public readonly int BinSize = 250;
 
-		public object Create(ActorInitializer init) { return new EditorActorLayer(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new EditorActorLayer(init.Self, this); }
 	}
 
 	public class EditorActorLayer : IWorldLoaded, ITickRender, IRender, IRadarSignature, ICreatePlayers, IRenderAnnotations
@@ -118,8 +118,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public EditorActorPreview Add(string id, ActorReference reference, bool initialSetup = false)
 		{
-			var owner = Players.Players[reference.InitDict.Get<OwnerInit>().PlayerName];
-
+			var owner = Players.Players[reference.Get<OwnerInit>().InternalName];
 			var preview = new EditorActorPreview(worldRenderer, id, reference, owner);
 
 			Add(preview, initialSetup);
@@ -141,11 +140,13 @@ namespace OpenRA.Mods.Common.Traits
 			foreach (var cell in footprint)
 				AddPreviewLocation(preview, cell);
 
+			preview.AddedToEditor();
+
 			if (!initialSetup)
 			{
 				UpdateNeighbours(preview.Footprint);
 
-				if (preview.Actor.Type == "mpspawn")
+				if (preview.Type == "mpspawn")
 					SyncMultiplayerCount();
 			}
 		}
@@ -162,8 +163,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			foreach (var cell in footprint)
 			{
-				List<EditorActorPreview> list;
-				if (!cellMap.TryGetValue(cell, out list))
+				if (!cellMap.TryGetValue(cell, out var list))
 					continue;
 
 				list.Remove(preview);
@@ -172,6 +172,7 @@ namespace OpenRA.Mods.Common.Traits
 					cellMap.Remove(cell);
 			}
 
+			preview.RemovedFromEditor();
 			UpdateNeighbours(preview.Footprint);
 
 			if (preview.Info.Name == "mpspawn")
@@ -226,8 +227,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		void AddPreviewLocation(EditorActorPreview preview, CPos location)
 		{
-			List<EditorActorPreview> list;
-			if (!cellMap.TryGetValue(location, out list))
+			if (!cellMap.TryGetValue(location, out var list))
 			{
 				list = new List<EditorActorPreview>();
 				cellMap.Add(location, list);
@@ -254,8 +254,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public IEnumerable<EditorActorPreview> PreviewsAt(CPos cell)
 		{
-			List<EditorActorPreview> list;
-			if (cellMap.TryGetValue(cell, out list))
+			if (cellMap.TryGetValue(cell, out var list))
 				return list;
 
 			return Enumerable.Empty<EditorActorPreview>();
@@ -272,8 +271,7 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var blocked = previews.Any(p =>
 				{
-					SubCell s;
-					return p.Footprint.TryGetValue(cell, out s) && s == (SubCell)i;
+					return p.Footprint.TryGetValue(cell, out var s) && s == (SubCell)i;
 				});
 
 				if (!blocked)
@@ -313,11 +311,11 @@ namespace OpenRA.Mods.Common.Traits
 			return nodes;
 		}
 
-		public void PopulateRadarSignatureCells(Actor self, List<Pair<CPos, Color>> destinationBuffer)
+		public void PopulateRadarSignatureCells(Actor self, List<(CPos Cell, Color Color)> destinationBuffer)
 		{
 			foreach (var previewsForCell in cellMap)
 				foreach (var preview in previewsForCell.Value)
-					destinationBuffer.Add(Pair.New(previewsForCell.Key, preview.Owner.Color));
+					destinationBuffer.Add((previewsForCell.Key, preview.RadarColor));
 		}
 
 		public EditorActorPreview this[string id]

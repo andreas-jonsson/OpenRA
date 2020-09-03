@@ -64,7 +64,7 @@ V2RL:
 	UpdatesPlayerStatistics:
 		AddToArmyValue: true
 	Health:
-		HP: 22000
+		HP: 26000
 	Armor:
 		Type: Heavy
 	Mobile:
@@ -76,7 +76,7 @@ V2RL:
 	RevealsShroud@GAPGEN:
 		Range: 4c0
 	Turreted:
-		TurnSpeed: 7
+		TurnSpeed: 28
 	Armament:
 		Weapon: 25mm
 		Recoil: 85
@@ -86,8 +86,6 @@ V2RL:
 	AttackTurreted:
 	WithMuzzleOverlay:
 	WithSpriteTurret:
-	SpawnActorOnDeath:
-		Actor: 1TNK.Husk
 	ProducibleWithLevel:
 		Prerequisites: vehicles.upgraded
 
@@ -108,7 +106,7 @@ V2RL:
 	UpdatesPlayerStatistics:
 		AddToArmyValue: true
 	Health:
-		HP: 45000
+		HP: 46000
 	Armor:
 		Type: Heavy
 	Mobile:
@@ -120,7 +118,7 @@ V2RL:
 	RevealsShroud@GAPGEN:
 		Range: 4c0
 	Turreted:
-		TurnSpeed: 5
+		TurnSpeed: 20
 	Armament:
 		Weapon: 90mm
 		Recoil: 128
@@ -166,7 +164,7 @@ V2RL:
 	RevealsShroud@GAPGEN:
 		Range: 4c0
 	Turreted:
-		TurnSpeed: 5
+		TurnSpeed: 20
 	Armament:
 		Weapon: 105mm
 		Recoil: 128
@@ -213,7 +211,7 @@ V2RL:
 	RevealsShroud@GAPGEN:
 		Range: 4c0
 	Turreted:
-		TurnSpeed: 2
+		TurnSpeed: 8
 	Armament@PRIMARY:
 		Weapon: 120mm
 		LocalOffset: 900,180,340, 900,-180,340
@@ -232,10 +230,10 @@ V2RL:
 	WithSpriteTurret:
 	SpawnActorOnDeath:
 		Actor: 4TNK.Husk
-	SelfHealing:
+	ChangesHealth:
 		Step: 100
 		Delay: 3
-		HealIfBelow: 50
+		StartIfBelow: 50
 		DamageCooldown: 150
 	ProducibleWithLevel:
 		Prerequisites: vehicles.upgraded
@@ -262,7 +260,7 @@ ARTY:
 	Armor:
 		Type: Light
 	Mobile:
-		TurnSpeed: 2
+		TurnSpeed: 8
 		Speed: 85
 		Locomotor: lighttracked
 	RevealsShroud:
@@ -307,6 +305,7 @@ HARV:
 		BaleUnloadDelay: 1
 		SearchFromProcRadius: 15
 		SearchFromHarvesterRadius: 8
+		HarvestFacings: 8
 		EmptyCondition: no-ore
 	Health:
 		HP: 60000
@@ -326,10 +325,10 @@ HARV:
 	HarvesterHuskModifier:
 		FullHuskActor: HARV.FullHusk
 		FullnessThreshold: 50
-	SelfHealing:
+	ChangesHealth:
 		Step: 100
 		Delay: 25
-		HealIfBelow: 50
+		StartIfBelow: 50
 		DamageCooldown: 500
 	Explodes:
 		RequiresCondition: !no-ore
@@ -373,7 +372,7 @@ MCV:
 	Transforms:
 		IntoActor: fact
 		Offset: -1,-1
-		Facing: 96
+		Facing: 384
 		TransformSounds: placbldg.aud, build5.aud
 		NoTransformNotification: BuildingCannotPlaceAudio
 	MustBeDestroyed:
@@ -405,7 +404,7 @@ JEEP:
 	Armor:
 		Type: Light
 	Mobile:
-		TurnSpeed: 10
+		TurnSpeed: 40
 		Speed: 170
 		PauseOnCondition: notmobile || being-captured
 	RevealsShroud:
@@ -415,7 +414,7 @@ JEEP:
 	RevealsShroud@GAPGEN:
 		Range: 4c0
 	Turreted:
-		TurnSpeed: 10
+		TurnSpeed: 40
 		Offset: 0,0,128
 	Armament:
 		Weapon: M60mg
@@ -517,7 +516,11 @@ MNLY:
 	Rearmable:
 		RearmActors: fix
 	Targetable:
-		TargetTypes: Ground, Vehicle, Mine
+		TargetTypes: GroundActor, Vehicle, Mine
+	WithAmmoPipsDecoration:
+		Position: BottomLeft
+		Margin: 4, 3
+		RequiresSelection: true
 
 TRUK:
 	Inherits: ^Vehicle
@@ -597,7 +600,7 @@ MRJ:
 	Armor:
 		Type: Heavy
 	Mobile:
-		Speed: 85
+		Speed: 78
 	RevealsShroud:
 		Range: 7c0
 	WithIdleOverlay@SPINNER:
@@ -676,7 +679,7 @@ FTRK:
 	Armor:
 		Type: Light
 	Mobile:
-		TurnSpeed: 10
+		TurnSpeed: 40
 		Speed: 118
 	RevealsShroud:
 		MinRange: 4c0
@@ -685,7 +688,7 @@ FTRK:
 	RevealsShroud@GAPGEN:
 		Range: 4c0
 	Turreted:
-		TurnSpeed: 10
+		TurnSpeed: 40
 		Offset: -298,0,298
 	Armament@AA:
 		Weapon: FLAK-23-AA
@@ -825,7 +828,7 @@ QTNK:
 		Color: FFFF0080
 		Range: 7c0
 	Targetable:
-		TargetTypes: Ground, MADTank, Vehicle
+		TargetTypes: GroundActor, MADTank, Vehicle
 	Selectable:
 		DecorationBounds: 44,38,0,-4
 
@@ -866,7 +869,7 @@ STNK:
 		Weapon: APTusk.stnk
 		LocalOffset: 192,0,176
 	Turreted:
-		TurnSpeed: 5
+		TurnSpeed: 20
 	AttackTurreted:
 	WithSpriteTurret:
 	Cargo:
@@ -880,6 +883,7 @@ STNK:
 		UncloakSound: appear1.aud
 		IsPlayerPalette: true
 		PauseOnCondition: cloak-force-disabled
+		UncloakOn: Attack, Heal, Dock
 	GrantConditionOnDamageState@UNCLOAK:
 		Condition: cloak-force-disabled
 		ValidDamageStates: Critical

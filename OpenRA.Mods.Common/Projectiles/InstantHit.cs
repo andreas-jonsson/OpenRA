@@ -21,8 +21,11 @@ namespace OpenRA.Mods.Common.Projectiles
 	[Desc("Simple, invisible, usually direct-on-target projectile.")]
 	public class InstantHitInfo : IProjectileInfo
 	{
-		[Desc("Maximum offset at the maximum range.")]
+		[Desc("The maximum/constant/incremental inaccuracy used in conjunction with the InaccuracyType property.")]
 		public readonly WDist Inaccuracy = WDist.Zero;
+
+		[Desc("Controls the way inaccuracy is calculated. Possible values are 'Maximum' - scale from 0 to max with range, 'PerCellIncrement' - scale from 0 with range and 'Absolute' - use set value regardless of range.")]
+		public readonly InaccuracyType InaccuracyType = InaccuracyType.Maximum;
 
 		[Desc("Projectile can be blocked.")]
 		public readonly bool Blockable = false;
@@ -53,9 +56,9 @@ namespace OpenRA.Mods.Common.Projectiles
 				target = args.GuidedTarget;
 			else if (info.Inaccuracy.Length > 0)
 			{
-				var inaccuracy = Util.ApplyPercentageModifiers(info.Inaccuracy.Length, args.InaccuracyModifiers);
-				var maxOffset = inaccuracy * (args.PassiveTarget - args.Source).Length / args.Weapon.Range.Length;
-				target = Target.FromPos(args.PassiveTarget + WVec.FromPDF(args.SourceActor.World.SharedRandom, 2) * maxOffset / 1024);
+				var maxInaccuracyOffset = Util.GetProjectileInaccuracy(info.Inaccuracy.Length, info.InaccuracyType, args);
+				var inaccuracyOffset = WVec.FromPDF(args.SourceActor.World.SharedRandom, 2) * maxInaccuracyOffset / 1024;
+				target = Target.FromPos(args.PassiveTarget + inaccuracyOffset);
 			}
 			else
 				target = Target.FromPos(args.PassiveTarget);
@@ -64,7 +67,6 @@ namespace OpenRA.Mods.Common.Projectiles
 		public void Tick(World world)
 		{
 			// Check for blocking actors
-			WPos blockedPos;
 			if (info.Blockable)
 			{
 				// If GuidedTarget has become invalid due to getting killed the same tick,
@@ -74,11 +76,17 @@ namespace OpenRA.Mods.Common.Projectiles
 					target = Target.FromPos(args.PassiveTarget);
 
 				if (BlocksProjectiles.AnyBlockingActorsBetween(world, args.Source, target.CenterPosition,
-					info.Width, out blockedPos))
+					info.Width, out var blockedPos))
 					target = Target.FromPos(blockedPos);
 			}
 
-			args.Weapon.Impact(target, new WarheadArgs(args));
+			var warheadArgs = new WarheadArgs(args)
+			{
+				ImpactOrientation = new WRot(WAngle.Zero, Util.GetVerticalAngle(args.Source, target.CenterPosition), args.Facing),
+				ImpactPosition = target.CenterPosition,
+			};
+
+			args.Weapon.Impact(target, warheadArgs);
 			world.AddFrameEndTask(w => w.Remove(this));
 		}
 

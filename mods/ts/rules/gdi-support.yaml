@@ -45,8 +45,13 @@ GACTWR:
 	Inherits: ^Defense
 	Inherits@IDISABLE: ^DisableOnPowerDown
 	Inherits@AUTOTARGET: ^AutoTargetAll
-	-WithSpriteBody:
+	WithMakeAnimation:
+		BodyNames: make
+	WithSpriteBody:
+		Name: make
+		Sequence: invisible
 	WithWallSpriteBody:
+		RequiresCondition: !build-incomplete
 		Type: wall
 	Valued:
 		Cost: 200
@@ -68,8 +73,8 @@ GACTWR:
 	DetectCloaked:
 		RequiresCondition: !empdisable && !disabled && (tower.vulcan || tower.rocket || tower.sam)
 	Turreted:
-		TurnSpeed: 10
-		InitialFacing: 224
+		TurnSpeed: 40
+		InitialFacing: 896
 	AttackTurreted:
 		RequiresCondition: !build-incomplete && (tower.vulcan || tower.rocket || tower.sam)
 		PauseOnCondition: empdisable || disabled
@@ -91,7 +96,6 @@ GACTWR:
 		LocalOffset: 588,120,1358
 		MuzzleSequence: muzzle
 		MuzzlePalette: effect-ignore-lighting
-		MuzzleSplitFacings: 8
 	Armament@VULCSECONDARY:
 		RequiresCondition: tower.vulcan
 		Name: secondary
@@ -99,7 +103,6 @@ GACTWR:
 		LocalOffset: 588,-120,1358
 		MuzzleSequence: muzzle
 		MuzzlePalette: effect-ignore-lighting
-		MuzzleSplitFacings: 8
 	Armament@ROCKET:
 		RequiresCondition: tower.rocket
 		Weapon: RPGTower
@@ -133,6 +136,10 @@ GACTWR:
 			tower.vulcan: !build-incomplete && !tower.vulcan && !tower.rocket && !tower.sam
 			tower.rocket: !build-incomplete && !tower.rocket && !tower.vulcan && !tower.sam
 			tower.sam: !build-incomplete && !tower.vulcan && !tower.rocket && !tower.sam
+		EditorOptions:
+			tower.vulcan: Vulcan Tower
+			tower.rocket: RPG Upgrade
+			tower.sam: SAM Upgrade
 	ProvidesPrerequisite@buildingname:
 	ProvidesPrerequisite@pluggable:
 		RequiresCondition: !build-incomplete && !tower.vulcan && !tower.rocket && !tower.sam

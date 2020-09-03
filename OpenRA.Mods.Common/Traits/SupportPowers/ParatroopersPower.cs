@@ -93,27 +93,26 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			base.Activate(self, order, manager);
 
-			var facing = info.UseDirectionalTarget && order.ExtraData != uint.MaxValue ? (int)order.ExtraData : -1;
+			var facing = info.UseDirectionalTarget && order.ExtraData != uint.MaxValue ? (WAngle?)WAngle.FromFacing((int)order.ExtraData) : null;
 			SendParatroopers(self, order.Target.CenterPosition, facing);
 		}
 
-		public Pair<Actor[], Actor[]> SendParatroopers(Actor self, WPos target, int facing = -1)
+		public (Actor[] Aircraft, Actor[] Units) SendParatroopers(Actor self, WPos target, WAngle? facing = null)
 		{
 			var aircraft = new List<Actor>();
 			var units = new List<Actor>();
 
 			var info = Info as ParatroopersPowerInfo;
 
-			if (facing < 0)
-				facing = 256 * self.World.SharedRandom.Next(info.QuantizedFacings) / info.QuantizedFacings;
+			if (!facing.HasValue)
+				facing = new WAngle(1024 * self.World.SharedRandom.Next(info.QuantizedFacings) / info.QuantizedFacings);
 
 			var utLower = info.UnitType.ToLowerInvariant();
-			ActorInfo unitType;
-			if (!self.World.Map.Rules.Actors.TryGetValue(utLower, out unitType))
+			if (!self.World.Map.Rules.Actors.TryGetValue(utLower, out var unitType))
 				throw new YamlException("Actors ruleset does not include the entry '{0}'".F(utLower));
 
 			var altitude = unitType.TraitInfo<AircraftInfo>().CruiseAltitude.Length;
-			var dropRotation = WRot.FromFacing(facing);
+			var dropRotation = WRot.FromYaw(facing.Value);
 			var delta = new WVec(0, -1024, 0).Rotate(dropRotation);
 			target = target + new WVec(0, 0, altitude);
 			var startEdge = target - (self.World.Map.DistanceToEdge(target, -delta) + info.Cordon).Length * delta / 1024;
@@ -161,9 +160,9 @@ namespace OpenRA.Mods.Common.Traits
 				aircraftInRange[a] = false;
 
 				// Checking for attack range is not relevant here because
-				// aircraft may be shot down before entering. Thus we remove
-				// the camera and beacon only if the whole squad is dead.
-				if (aircraftInRange.All(kv => kv.Key.IsDead))
+				// aircraft may be shot down before entering the range.
+				// If at the map's edge, they may be removed from world before leaving.
+				if (aircraftInRange.All(kv => !kv.Key.IsInWorld))
 				{
 					RemoveCamera(camera);
 					RemoveBeacon(beacon);
@@ -185,7 +184,7 @@ namespace OpenRA.Mods.Common.Traits
 				{
 					new CenterPositionInit(startEdge + spawnOffset),
 					new OwnerInit(self.Owner),
-					new FacingInit(facing),
+					new FacingInit(facing.Value),
 				}));
 			}
 
@@ -266,7 +265,7 @@ namespace OpenRA.Mods.Common.Traits
 				}
 			});
 
-			return Pair.New(aircraft.ToArray(), units.ToArray());
+			return (aircraft.ToArray(), units.ToArray());
 		}
 
 		void RemoveCamera(Actor camera)

@@ -9,10 +9,8 @@
  */
 #endregion
 
-using System;
 using System.Linq;
 using OpenRA.Activities;
-using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Primitives;
 using OpenRA.Traits;
@@ -34,7 +32,7 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly bool BaselineSpawn = false;
 
 		[Desc("Direction the aircraft should face to land.")]
-		public readonly int Facing = 64;
+		public readonly WAngle Facing = new WAngle(256);
 
 		public override object Create(ActorInitializer init) { return new ProductionAirdrop(init, this); }
 	}
@@ -57,7 +55,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			CPos startPos;
 			CPos endPos;
-			int spawnFacing;
+			WAngle spawnFacing;
 
 			if (info.BaselineSpawn && mpStart != null)
 			{
@@ -68,7 +66,7 @@ namespace OpenRA.Mods.Common.Traits
 				startPos = spawn + spawnVec * (Exts.ISqrt((bounds.Height * bounds.Height + bounds.Width * bounds.Width) / (4 * spawnVec.LengthSquared)));
 				endPos = startPos;
 				var spawnDirection = new WVec((self.Location - startPos).X, (self.Location - startPos).Y, 0);
-				spawnFacing = spawnDirection.Yaw.Facing;
+				spawnFacing = spawnDirection.Yaw;
 			}
 			else
 			{

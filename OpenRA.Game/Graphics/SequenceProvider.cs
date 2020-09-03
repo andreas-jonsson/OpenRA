@@ -32,10 +32,11 @@ namespace OpenRA.Graphics
 		int ShadowZOffset { get; }
 		int[] Frames { get; }
 		Rectangle Bounds { get; }
+		bool IgnoreWorldTint { get; }
 
 		Sprite GetSprite(int frame);
-		Sprite GetSprite(int frame, int facing);
-		Sprite GetShadow(int frame, int facing);
+		Sprite GetSprite(int frame, WAngle facing);
+		Sprite GetShadow(int frame, WAngle facing);
 	}
 
 	public interface ISpriteSequenceLoader
@@ -69,12 +70,10 @@ namespace OpenRA.Graphics
 
 		public ISpriteSequence GetSequence(string unitName, string sequenceName)
 		{
-			UnitSequences unitSeq;
-			if (!sequences.Value.TryGetValue(unitName, out unitSeq))
+			if (!sequences.Value.TryGetValue(unitName, out var unitSeq))
 				throw new InvalidOperationException("Unit `{0}` does not have any sequences defined.".F(unitName));
 
-			ISpriteSequence seq;
-			if (!unitSeq.Value.TryGetValue(sequenceName, out seq))
+			if (!unitSeq.Value.TryGetValue(sequenceName, out var seq))
 				throw new InvalidOperationException("Unit `{0}` does not have a sequence named `{1}`".F(unitName, sequenceName));
 
 			return seq;
@@ -87,8 +86,7 @@ namespace OpenRA.Graphics
 
 		public bool HasSequence(string unitName, string sequenceName)
 		{
-			UnitSequences unitSeq;
-			if (!sequences.Value.TryGetValue(unitName, out unitSeq))
+			if (!sequences.Value.TryGetValue(unitName, out var unitSeq))
 				throw new InvalidOperationException("Unit `{0}` does not have any sequences defined.".F(unitName));
 
 			return unitSeq.Value.ContainsKey(sequenceName);
@@ -96,8 +94,7 @@ namespace OpenRA.Graphics
 
 		public IEnumerable<string> Sequences(string unitName)
 		{
-			UnitSequences unitSeq;
-			if (!sequences.Value.TryGetValue(unitName, out unitSeq))
+			if (!sequences.Value.TryGetValue(unitName, out var unitSeq))
 				throw new InvalidOperationException("Unit `{0}` does not have any sequences defined.".F(unitName));
 
 			return unitSeq.Value.Keys;
@@ -114,8 +111,7 @@ namespace OpenRA.Graphics
 
 				var key = node.Value.ToLines(node.Key).JoinWith("|");
 
-				UnitSequences t;
-				if (sequenceCache.TryGetValue(key, out t))
+				if (sequenceCache.TryGetValue(key, out var t))
 					items.Add(node.Key, t);
 				else
 				{

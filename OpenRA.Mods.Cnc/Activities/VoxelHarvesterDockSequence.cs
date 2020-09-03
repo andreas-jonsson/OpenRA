@@ -9,7 +9,6 @@
  */
 #endregion
 
-using OpenRA.Activities;
 using OpenRA.Mods.Cnc.Traits.Render;
 using OpenRA.Mods.Common.Activities;
 
@@ -20,7 +19,7 @@ namespace OpenRA.Mods.Cnc.Activities
 		readonly WithVoxelUnloadBody body;
 		readonly WithDockingOverlay spriteOverlay;
 
-		public VoxelHarvesterDockSequence(Actor self, Actor refinery, int dockAngle, bool isDragRequired, WVec dragOffset, int dragLength)
+		public VoxelHarvesterDockSequence(Actor self, Actor refinery, WAngle dockAngle, bool isDragRequired, WVec dragOffset, int dragLength)
 			: base(self, refinery, dockAngle, isDragRequired, dragOffset, dragLength)
 		{
 			body = self.Trait<WithVoxelUnloadBody>();

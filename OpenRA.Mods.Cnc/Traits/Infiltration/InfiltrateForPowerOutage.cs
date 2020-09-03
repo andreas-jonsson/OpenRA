@@ -15,8 +15,9 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Cnc.Traits
 {
-	class InfiltrateForPowerOutageInfo : ITraitInfo
+	class InfiltrateForPowerOutageInfo : TraitInfo
 	{
+		[Desc("The `TargetTypes` from `Targetable` that are allowed to enter.")]
 		public readonly BitSet<TargetableType> Types = default(BitSet<TargetableType>);
 
 		[Desc("Measured in ticks.")]
@@ -30,7 +31,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		[Desc("Sound the perpetrator will hear after successful infiltration.")]
 		public readonly string InfiltrationNotification = null;
 
-		public object Create(ActorInitializer init) { return new InfiltrateForPowerOutage(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new InfiltrateForPowerOutage(init.Self, this); }
 	}
 
 	class InfiltrateForPowerOutage : INotifyOwnerChanged, INotifyInfiltrated

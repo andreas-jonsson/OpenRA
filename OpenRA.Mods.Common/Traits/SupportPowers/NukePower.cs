@@ -45,7 +45,7 @@ namespace OpenRA.Mods.Common.Traits
 			"'False' will make the missile continue until it hits the ground and disappears (without triggering another explosion).")]
 		public readonly bool RemoveMissileOnDetonation = true;
 
-		[PaletteReference("IsPlayerPalette")]
+		[PaletteReference(nameof(IsPlayerPalette))]
 		[Desc("Palette to use for the missile weapon image.")]
 		public readonly string MissilePalette = "effect";
 
@@ -65,7 +65,7 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Delay in ticks until trail animation is spawned.")]
 		public readonly int TrailDelay = 1;
 
-		[PaletteReference("TrailUsePlayerPalette")]
+		[PaletteReference(nameof(TrailUsePlayerPalette))]
 		[Desc("Palette used to render the trail sequence.")]
 		public readonly string TrailPalette = "effect";
 
@@ -99,9 +99,6 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Amount of time after detonation to remove the camera.")]
 		public readonly int CameraRemoveDelay = 25;
 
-		[Desc("Corresponds to `Type` from `FlashPaletteEffect` on the world actor.")]
-		public readonly string FlashType = null;
-
 		public WeaponInfo WeaponInfo { get; private set; }
 
 		public override object Create(ActorInitializer init) { return new NukePower(init.Self, this); }
@@ -110,9 +107,8 @@ namespace OpenRA.Mods.Common.Traits
 			if (!string.IsNullOrEmpty(TrailImage) && !TrailSequences.Any())
 				throw new YamlException("At least one entry in TrailSequences must be defined when TrailImage is defined.");
 
-			WeaponInfo weapon;
 			var weaponToLower = (MissileWeapon ?? string.Empty).ToLowerInvariant();
-			if (!rules.Weapons.TryGetValue(weaponToLower, out weapon))
+			if (!rules.Weapons.TryGetValue(weaponToLower, out var weapon))
 				throw new YamlException("Weapons Ruleset does not contain an entry '{0}'".F(weaponToLower));
 
 			WeaponInfo = weapon;
@@ -148,9 +144,6 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void Activate(Actor self, WPos targetPosition)
 		{
-			foreach (var launchpad in self.TraitsImplementing<INotifyNuke>())
-				launchpad.Launching(self);
-
 			var palette = info.IsPlayerPalette ? info.MissilePalette + self.Owner.InternalName : info.MissilePalette;
 			var skipAscent = info.SkipAscent || body == null;
 			var launchPos = skipAscent ? WPos.Zero : self.CenterPosition + body.LocalToWorld(info.SpawnOffset);
@@ -159,7 +152,6 @@ namespace OpenRA.Mods.Common.Traits
 				launchPos,
 				targetPosition, info.DetonationAltitude, info.RemoveMissileOnDetonation,
 				info.FlightVelocity, info.MissileDelay, info.FlightDelay, skipAscent,
-				info.FlashType,
 				info.TrailImage, info.TrailSequences, info.TrailPalette, info.TrailUsePlayerPalette, info.TrailDelay, info.TrailInterval);
 
 			self.World.AddFrameEndTask(w => w.Add(missile));

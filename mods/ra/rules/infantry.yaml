@@ -47,7 +47,7 @@ DOG:
 	AutoTargetPriority@DEFAULT:
 		ValidTargets: Infantry
 	Targetable:
-		TargetTypes: Ground, Infantry
+		TargetTypes: GroundActor, Infantry
 	WithInfantryBody:
 		MoveSequence: walk
 		StandSequences: stand
@@ -329,11 +329,11 @@ SPY:
 		IdleSequences: idle1,idle2
 		StandSequences: stand,stand2
 	WithDecoration@disguise:
-		Margin: 6, 10
+		Position: Top
+		Margin: 0, -6
 		Image: pips
-		Sequence: pip-disguise
+		Sequence: tag-spy
 		Palette: effect
-		Position: TopRight
 		RequiresCondition: disguise
 	IgnoresDisguise:
 	Armament:
@@ -752,7 +752,7 @@ Ant:
 		HP: 75000
 	Mobile:
 		Speed: 99
-		TurnSpeed: 12
+		TurnSpeed: 48
 		Locomotor: lighttracked
 	-Crushable:
 	AutoTarget:
@@ -763,7 +763,7 @@ Ant:
 	Armament:
 		Weapon: mandible
 	Targetable:
-		TargetTypes: Ground, Infantry, Ant
+		TargetTypes: GroundActor, Infantry, Ant
 	WithDeathAnimation:
 		UseDeathTypeSuffix: false
 	Voiced:

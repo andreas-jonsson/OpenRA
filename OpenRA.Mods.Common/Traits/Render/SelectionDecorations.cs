@@ -10,7 +10,6 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Graphics;
 using OpenRA.Primitives;
@@ -23,7 +22,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 		public override object Create(ActorInitializer init) { return new SelectionDecorations(init.Self, this); }
 	}
 
-	public class SelectionDecorations : SelectionDecorationsBase
+	public class SelectionDecorations : SelectionDecorationsBase, IRender
 	{
 		readonly Interactable interactable;
 
@@ -61,6 +60,16 @@ namespace OpenRA.Mods.Common.Traits.Render
 
 			var bounds = interactable.DecorationBounds(self, wr);
 			yield return new SelectionBarsAnnotationRenderable(self, bounds, displayHealth, displayExtra);
+		}
+
+		IEnumerable<IRenderable> IRender.Render(Actor self, WorldRenderer wr)
+		{
+			yield break;
+		}
+
+		IEnumerable<Rectangle> IRender.ScreenBounds(Actor self, WorldRenderer wr)
+		{
+			yield return interactable.DecorationBounds(self, wr);
 		}
 	}
 }

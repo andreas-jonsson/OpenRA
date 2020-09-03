@@ -16,7 +16,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits.Render
 {
 	[Desc("Renders an overlay when the actor is taking heavy damage.")]
-	public class WithDamageOverlayInfo : ITraitInfo, Requires<RenderSpritesInfo>
+	public class WithDamageOverlayInfo : TraitInfo, Requires<RenderSpritesInfo>
 	{
 		public readonly string Image = "smoke_m";
 
@@ -29,7 +29,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 		[SequenceReference("Image")]
 		public readonly string EndSequence = "end";
 
-		[PaletteReference("IsPlayerPalette")]
+		[PaletteReference(nameof(IsPlayerPalette))]
 		[Desc("Custom palette name.")]
 		public readonly string Palette = null;
 
@@ -44,7 +44,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 		public readonly DamageState MinimumDamageState = DamageState.Heavy;
 		public readonly DamageState MaximumDamageState = DamageState.Dead;
 
-		public object Create(ActorInitializer init) { return new WithDamageOverlay(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new WithDamageOverlay(init.Self, this); }
 	}
 
 	public class WithDamageOverlay : INotifyDamage

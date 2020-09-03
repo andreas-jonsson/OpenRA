@@ -23,12 +23,12 @@ namespace OpenRA.Traits
 	}
 
 	[Desc("Required for FrozenUnderFog to work. Attach this to the player actor.")]
-	public class FrozenActorLayerInfo : Requires<ShroudInfo>, ITraitInfo
+	public class FrozenActorLayerInfo : TraitInfo, Requires<ShroudInfo>
 	{
 		[Desc("Size of partition bins (cells)")]
 		public readonly int BinSize = 10;
 
-		public object Create(ActorInitializer init) { return new FrozenActorLayer(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new FrozenActorLayer(init.Self, this); }
 	}
 
 	public class FrozenActor
@@ -310,8 +310,7 @@ namespace OpenRA.Traits
 
 		public FrozenActor FromID(uint id)
 		{
-			FrozenActor fa;
-			if (!frozenActorsById.TryGetValue(id, out fa))
+			if (!frozenActorsById.TryGetValue(id, out var fa))
 				return null;
 
 			return fa;

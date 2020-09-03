@@ -9,7 +9,6 @@
  */
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Activities;
@@ -78,7 +77,8 @@ namespace OpenRA.Mods.Common.Activities
 
 		protected virtual IEnumerable<CPos> CandidateMovementCells(Actor self)
 		{
-			return Util.AdjacentCells(self.World, Target);
+			return Util.AdjacentCells(self.World, Target)
+				.Where(c => Mobile.CanStayInCell(c));
 		}
 
 		protected override void OnFirstRun(Actor self)
@@ -88,9 +88,8 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override bool Tick(Actor self)
 		{
-			bool targetIsHiddenActor;
 			var oldTargetLocation = lastVisibleTargetLocation;
-			target = target.Recalculate(self.Owner, out targetIsHiddenActor);
+			target = target.Recalculate(self.Owner, out var targetIsHiddenActor);
 			if (!targetIsHiddenActor && target.Type == TargetType.Actor)
 			{
 				lastVisibleTarget = Target.FromTargetPositions(target);

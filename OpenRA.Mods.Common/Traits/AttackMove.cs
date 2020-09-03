@@ -11,7 +11,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Graphics;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Orders;
 using OpenRA.Primitives;
@@ -20,7 +19,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("Provides access to the attack-move command, which will make the actor automatically engage viable targets while moving to the destination.")]
-	class AttackMoveInfo : ITraitInfo, Requires<IMoveInfo>
+	class AttackMoveInfo : TraitInfo, Requires<IMoveInfo>
 	{
 		[VoiceReference]
 		public readonly string Voice = "Action";
@@ -36,7 +35,7 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Can the actor be ordered to move in to shroud?")]
 		public readonly bool MoveIntoShroud = true;
 
-		public object Create(ActorInitializer init) { return new AttackMove(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new AttackMove(init.Self, this); }
 	}
 
 	class AttackMove : IResolveOrder, IOrderVoice
@@ -85,7 +84,8 @@ namespace OpenRA.Mods.Common.Traits
 
 	public class AttackMoveOrderGenerator : UnitOrderGenerator
 	{
-		readonly TraitPair<AttackMove>[] subjects;
+		TraitPair<AttackMove>[] subjects;
+
 		readonly MouseButton expectedButton;
 
 		public AttackMoveOrderGenerator(IEnumerable<Actor> subjects, MouseButton button)
@@ -117,14 +117,18 @@ namespace OpenRA.Mods.Common.Traits
 
 				// Cells outside the playable area should be clamped to the edge for consistency with move orders
 				cell = world.Map.Clamp(cell);
-				foreach (var s in subjects)
-					yield return new Order(orderName, s.Actor, Target.FromCell(world, cell), queued);
+				yield return new Order(orderName, null, Target.FromCell(world, cell), queued, null, subjects.Select(s => s.Actor).ToArray());
 			}
 		}
 
-		public override void Tick(World world)
+		public override void SelectionChanged(World world, IEnumerable<Actor> selected)
 		{
-			if (subjects.All(s => s.Actor.IsDead))
+			subjects = selected.SelectMany(a => a.TraitsImplementing<AttackMove>()
+					.Select(am => new TraitPair<AttackMove>(a, am)))
+				.ToArray();
+
+			// AttackMove doesn't work without AutoTarget, so require at least one unit in the selection to have it
+			if (!subjects.Any(s => s.Actor.Info.HasTraitInfo<AutoTargetInfo>()))
 				world.CancelInputMode();
 		}
 

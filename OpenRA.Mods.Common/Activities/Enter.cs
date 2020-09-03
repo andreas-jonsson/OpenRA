@@ -53,17 +53,16 @@ namespace OpenRA.Mods.Common.Activities
 		protected virtual bool TryStartEnter(Actor self, Actor targetActor) { return true; }
 
 		/// <summary>
-		/// Called when the actor has entered the target actor
-		/// Return true if the action succeeded and the actor should be Killed/Disposed
-		/// (assuming the relevant EnterBehaviour), or false if the actor should exit unharmed
+		/// Called when the actor has entered the target actor.
+		/// Actor will be be Killed/Disposed or they will enter/exit unharmed.
+		/// Depends on either the EnterBehaviour of the actor or the requirements of an overriding function.
 		/// </summary>
 		protected virtual void OnEnterComplete(Actor self, Actor targetActor) { }
 
 		public override bool Tick(Actor self)
 		{
 			// Update our view of the target
-			bool targetIsHiddenActor;
-			target = target.Recalculate(self.Owner, out targetIsHiddenActor);
+			target = target.Recalculate(self.Owner, out var targetIsHiddenActor);
 			if (!targetIsHiddenActor && target.Type == TargetType.Actor)
 				lastVisibleTarget = Target.FromTargetPositions(target);
 

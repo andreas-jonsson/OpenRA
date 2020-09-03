@@ -24,9 +24,8 @@ namespace OpenRA
 		public readonly byte TerrainType = byte.MaxValue;
 		public readonly byte Height;
 		public readonly byte RampType;
-		public readonly Color LeftColor;
-		public readonly Color RightColor;
-
+		public readonly Color MinColor;
+		public readonly Color MaxColor;
 		public readonly float ZOffset = 0.0f;
 		public readonly float ZRamp = 1.0f;
 	}
@@ -73,8 +72,7 @@ namespace OpenRA
 				tileInfo = new TerrainTileInfo[Size.X * Size.Y];
 				foreach (var node in nodes)
 				{
-					int key;
-					if (!int.TryParse(node.Key, out key) || key < 0 || key >= tileInfo.Length)
+					if (!int.TryParse(node.Key, out var key) || key < 0 || key >= tileInfo.Length)
 						throw new InvalidDataException("Invalid tile key '{0}' on template '{1}' of tileset '{2}'.".F(node.Key, Id, tileSet.Id));
 
 					tileInfo[key] = LoadTileInfo(tileSet, node.Value);
@@ -87,8 +85,7 @@ namespace OpenRA
 				var i = 0;
 				foreach (var node in nodes)
 				{
-					int key;
-					if (!int.TryParse(node.Key, out key) || key != i++)
+					if (!int.TryParse(node.Key, out var key) || key != i++)
 						throw new InvalidDataException("Invalid tile key '{0}' on template '{1}' of tileset '{2}'.".F(node.Key, Id, tileSet.Id));
 
 					tileInfo[key] = LoadTileInfo(tileSet, node.Value);
@@ -106,11 +103,11 @@ namespace OpenRA
 
 			// Fall back to the terrain-type color if necessary
 			var overrideColor = tileSet.TerrainInfo[tile.TerrainType].Color;
-			if (tile.LeftColor == default(Color))
-				tile.GetType().GetField("LeftColor").SetValue(tile, overrideColor);
+			if (tile.MinColor == default(Color))
+				tile.GetType().GetField("MinColor").SetValue(tile, overrideColor);
 
-			if (tile.RightColor == default(Color))
-				tile.GetType().GetField("RightColor").SetValue(tile, overrideColor);
+			if (tile.MaxColor == default(Color))
+				tile.GetType().GetField("MaxColor").SetValue(tile, overrideColor);
 
 			return tile;
 		}
@@ -139,6 +136,8 @@ namespace OpenRA
 		public readonly string[] EditorTemplateOrder;
 		public readonly bool IgnoreTileSpriteOffsets;
 		public readonly bool EnableDepth = false;
+		public readonly float MinHeightColorBrightness = 1.0f;
+		public readonly float MaxHeightColorBrightness = 1.0f;
 
 		[FieldLoader.Ignore]
 		public readonly IReadOnlyDictionary<ushort, TerrainTemplateInfo> Templates;
@@ -215,8 +214,7 @@ namespace OpenRA
 
 		public byte GetTerrainIndex(string type)
 		{
-			byte index;
-			if (terrainIndexByType.TryGetValue(type, out index))
+			if (terrainIndexByType.TryGetValue(type, out var index))
 				return index;
 
 			throw new InvalidDataException("Tileset '{0}' lacks terrain type '{1}'".F(Id, type));
@@ -224,8 +222,7 @@ namespace OpenRA
 
 		public byte GetTerrainIndex(TerrainTile r)
 		{
-			TerrainTemplateInfo tpl;
-			if (!Templates.TryGetValue(r.Type, out tpl))
+			if (!Templates.TryGetValue(r.Type, out var tpl))
 				return defaultWalkableTerrainIndex;
 
 			if (tpl.Contains(r.Index))
@@ -240,8 +237,7 @@ namespace OpenRA
 
 		public TerrainTileInfo GetTileInfo(TerrainTile r)
 		{
-			TerrainTemplateInfo tpl;
-			if (!Templates.TryGetValue(r.Type, out tpl))
+			if (!Templates.TryGetValue(r.Type, out var tpl))
 				return null;
 
 			return tpl.Contains(r.Index) ? tpl[r.Index] : null;

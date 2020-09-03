@@ -53,7 +53,7 @@ namespace OpenRA
 		public bool DiscoverNatDevices = false;
 
 		[Desc("Time in milliseconds to search for UPnP enabled NAT devices.")]
-		public int NatDiscoveryTimeout = 1000;
+		public int NatDiscoveryTimeout = 5000;
 
 		[Desc("Starts the game with a default map. Input as hash that can be obtained by the utility.")]
 		public string Map = null;
@@ -82,12 +82,11 @@ namespace OpenRA
 		[Desc("Sets the timestamp format. Defaults to the ISO 8601 standard.")]
 		public string TimestampFormat = "yyyy-MM-ddTHH:mm:ss";
 
-		[Desc("Path to a MaxMind GeoLite2 database to use for player geo-location.",
-			"Database files can be downloaded from https://dev.maxmind.com/geoip/geoip2/geolite2/")]
-		public string GeoIPDatabase = null;
-
 		[Desc("Allow clients to see anonymised IPs for other clients.")]
 		public bool ShareAnonymizedIPs = true;
+
+		[Desc("Allow clients to see the country of other clients.")]
+		public bool EnableGeoIP = true;
 
 		public ServerSettings Clone()
 		{
@@ -173,11 +172,14 @@ namespace OpenRA
 		[Desc("Disable operating-system provided cursor rendering.")]
 		public bool DisableHardwareCursors = false;
 
-		[Desc("Use OpenGL ES if both ES and regular OpenGL are available.")]
-		public bool PreferGLES = false;
-
 		[Desc("Display index to use in a multi-monitor fullscreen setup.")]
 		public int VideoDisplay = 0;
+
+		[Desc("Preferred OpenGL profile to use.",
+			"Modern: OpenGL Core Profile 3.2 or greater.",
+			"Embedded: OpenGL ES 3.0 or greater.",
+			"Legacy: OpenGL 2.1 with framebuffer_object extension.")]
+		public GLProfile GLProfile = GLProfile.Modern;
 
 		public int BatchSize = 8192;
 		public int SheetSize = 2048;
@@ -293,8 +295,7 @@ namespace OpenRA
 					yamlCache = MiniYaml.FromFile(settingsFile, false);
 					foreach (var yamlSection in yamlCache)
 					{
-						object settingsSection;
-						if (yamlSection.Key != null && Sections.TryGetValue(yamlSection.Key, out settingsSection))
+						if (yamlSection.Key != null && Sections.TryGetValue(yamlSection.Key, out var settingsSection))
 							LoadSectionYaml(yamlSection.Value, settingsSection);
 					}
 

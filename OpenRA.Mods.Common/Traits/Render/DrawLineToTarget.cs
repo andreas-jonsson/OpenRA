@@ -18,10 +18,10 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("Renders target lines between order waypoints.")]
-	public class DrawLineToTargetInfo : ITraitInfo
+	public class DrawLineToTargetInfo : TraitInfo
 	{
-		[Desc("Delay (in ticks) before the target lines disappear.")]
-		public readonly int Delay = 60;
+		[Desc("Delay (in milliseconds) before the target lines disappear.")]
+		public readonly int Delay = 2400;
 
 		[Desc("Width (in pixels) of the target lines.")]
 		public readonly int LineWidth = 1;
@@ -35,14 +35,14 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Width (in pixels) of the queued end node markers.")]
 		public readonly int QueuedMarkerWidth = 2;
 
-		public virtual object Create(ActorInitializer init) { return new DrawLineToTarget(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new DrawLineToTarget(init.Self, this); }
 	}
 
 	public class DrawLineToTarget : IRenderAboveShroud, IRenderAnnotationsWhenSelected, INotifySelected
 	{
 		readonly DrawLineToTargetInfo info;
 		readonly List<IRenderable> renderableCache = new List<IRenderable>();
-		int lifetime;
+		long lifetime;
 
 		public DrawLineToTarget(Actor self, DrawLineToTargetInfo info)
 		{
@@ -55,7 +55,7 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 
 			// Reset the order line timeout.
-			lifetime = info.Delay;
+			lifetime = Game.RunTime + info.Delay;
 		}
 
 		void INotifySelected.Selected(Actor self)
@@ -71,7 +71,7 @@ namespace OpenRA.Mods.Common.Traits
 			// Players want to see the lines when in waypoint mode.
 			var force = Game.GetModifierKeys().HasModifier(Modifiers.Shift) || self.World.OrderGenerator is ForceModifiersOrderGenerator;
 
-			if (--lifetime <= 0 && !force)
+			if (Game.RunTime > lifetime && !force)
 				yield break;
 
 			var pal = wr.Palette(TileSet.TerrainPaletteInternalName);
@@ -80,7 +80,7 @@ namespace OpenRA.Mods.Common.Traits
 				if (!a.IsCanceling)
 					foreach (var n in a.TargetLineNodes(self))
 						if (n.Tile != null && n.Target.Type != TargetType.Invalid)
-							yield return new SpriteRenderable(n.Tile, n.Target.CenterPosition, WVec.Zero, -511, pal, 1f, true);
+							yield return new SpriteRenderable(n.Tile, n.Target.CenterPosition, WVec.Zero, -511, pal, 1f, true, true);
 		}
 
 		bool IRenderAboveShroud.SpatiallyPartitionable { get { return false; } }
@@ -93,7 +93,7 @@ namespace OpenRA.Mods.Common.Traits
 			// Players want to see the lines when in waypoint mode.
 			var force = Game.GetModifierKeys().HasModifier(Modifiers.Shift) || self.World.OrderGenerator is ForceModifiersOrderGenerator;
 
-			if (--lifetime <= 0 && !force)
+			if (Game.RunTime > lifetime && !force)
 				return Enumerable.Empty<IRenderable>();
 
 			renderableCache.Clear();

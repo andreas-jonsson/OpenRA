@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System.Collections.Generic;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -17,10 +18,24 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		[Desc("Measured in ticks.")]
 		public readonly int ChargeInterval = 0;
+
+		public readonly string IconImage = "icon";
+
+		[SequenceReference("IconImage")]
+		[Desc("Icon sprite displayed in the support power palette.")]
 		public readonly string Icon = null;
+
+		[PaletteReference]
+		[Desc("Palette used for the icon.")]
+		public readonly string IconPalette = "chrome";
+
 		public readonly string Description = "";
 		public readonly string LongDesc = "";
+
+		[Desc("Allow multiple instances of the same support power.")]
 		public readonly bool AllowMultiple = false;
+
+		[Desc("Allow this to be used only once.")]
 		public readonly bool OneShot = false;
 
 		[Desc("Cursor to display for using this support power.")]
@@ -64,16 +79,12 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Defines to which players the timer is shown.")]
 		public readonly Stance DisplayTimerStances = Stance.None;
 
-		[PaletteReference]
-		[Desc("Palette used for the icon.")]
-		public readonly string IconPalette = "chrome";
-
 		[Desc("Beacons are only supported on the Airstrike, Paratroopers, and Nuke powers")]
 		public readonly bool DisplayBeacon = false;
 
 		public readonly bool BeaconPaletteIsPlayerPalette = true;
 
-		[PaletteReference("BeaconPaletteIsPlayerPalette")]
+		[PaletteReference(nameof(BeaconPaletteIsPlayerPalette))]
 		public readonly string BeaconPalette = "player";
 
 		public readonly string BeaconImage = "beacon";
@@ -142,6 +153,9 @@ namespace OpenRA.Mods.Common.Traits
 			Game.Sound.PlayToPlayer(SoundType.UI, self.Owner, Info.EndChargeSound);
 			Game.Sound.PlayNotification(self.World.Map.Rules, self.Owner, "Speech",
 				Info.EndChargeSpeechNotification, self.Owner.Faction.InternalName);
+
+			foreach (var notify in self.TraitsImplementing<INotifySupportPower>())
+				notify.Charged(self);
 		}
 
 		public virtual void SelectTarget(Actor self, string order, SupportPowerManager manager)
@@ -162,6 +176,9 @@ namespace OpenRA.Mods.Common.Traits
 					order.Player.Color,
 					Info.RadarPingDuration);
 			}
+
+			foreach (var notify in self.TraitsImplementing<INotifySupportPower>())
+				notify.Activated(self);
 		}
 
 		public virtual void PlayLaunchSounds()
@@ -174,6 +191,17 @@ namespace OpenRA.Mods.Common.Traits
 			var toPlayer = isAllied ? renderPlayer ?? Self.Owner : renderPlayer;
 			var speech = isAllied ? Info.LaunchSpeechNotification : Info.IncomingSpeechNotification;
 			Game.Sound.PlayNotification(Self.World.Map.Rules, toPlayer, "Speech", speech, toPlayer.Faction.InternalName);
+		}
+
+		public IEnumerable<CPos> CellsMatching(CPos location, char[] footprint, CVec dimensions)
+		{
+			var index = 0;
+			var x = location.X - (dimensions.X - 1) / 2;
+			var y = location.Y - (dimensions.Y - 1) / 2;
+			for (var j = 0; j < dimensions.Y; j++)
+				for (var i = 0; i < dimensions.X; i++)
+					if (footprint[index++] == 'x')
+						yield return new CPos(x + i, y + j);
 		}
 	}
 }

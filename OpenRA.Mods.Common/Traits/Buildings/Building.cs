@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Graphics;
-using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -27,7 +26,7 @@ namespace OpenRA.Mods.Common.Traits
 		OccupiedPassableTransitOnly = '+'
 	}
 
-	public class BuildingInfo : ITraitInfo, IOccupySpaceInfo, IPlaceBuildingDecorationInfo
+	public class BuildingInfo : TraitInfo, IOccupySpaceInfo, IPlaceBuildingDecorationInfo
 	{
 		[Desc("Where you are allowed to place the building (Water, Clear, ...)")]
 		public readonly HashSet<string> TerrainTypes = new HashSet<string>();
@@ -61,7 +60,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public readonly string[] UndeploySounds = { };
 
-		public virtual object Create(ActorInitializer init) { return new Building(init, this); }
+		public override object Create(ActorInitializer init) { return new Building(init, this); }
 
 		protected static object LoadFootprint(MiniYaml yaml)
 		{
@@ -268,8 +267,8 @@ namespace OpenRA.Mods.Common.Traits
 		readonly Actor self;
 		readonly BuildingInfluence influence;
 
-		Pair<CPos, SubCell>[] occupiedCells;
-		Pair<CPos, SubCell>[] targetableCells;
+		(CPos, SubCell)[] occupiedCells;
+		(CPos, SubCell)[] targetableCells;
 		CPos[] transitOnlyCells;
 
 		public CPos TopLeft { get { return topLeft; } }
@@ -278,26 +277,26 @@ namespace OpenRA.Mods.Common.Traits
 		public Building(ActorInitializer init, BuildingInfo info)
 		{
 			self = init.Self;
-			topLeft = init.Get<LocationInit, CPos>();
+			topLeft = init.GetValue<LocationInit, CPos>();
 			Info = info;
 			influence = self.World.WorldActor.Trait<BuildingInfluence>();
 
 			occupiedCells = Info.OccupiedTiles(TopLeft)
-				.Select(c => Pair.New(c, SubCell.FullCell)).ToArray();
+				.Select(c => (c, SubCell.FullCell)).ToArray();
 
 			targetableCells = Info.FootprintTiles(TopLeft, FootprintCellType.Occupied)
-				.Select(c => Pair.New(c, SubCell.FullCell)).ToArray();
+				.Select(c => (c, SubCell.FullCell)).ToArray();
 
 			transitOnlyCells = Info.TransitOnlyTiles(TopLeft).ToArray();
 
 			CenterPosition = init.World.Map.CenterOfCell(topLeft) + Info.CenterOffset(init.World);
 		}
 
-		public Pair<CPos, SubCell>[] OccupiedCells() { return occupiedCells; }
+		public (CPos, SubCell)[] OccupiedCells() { return occupiedCells; }
 
 		public CPos[] TransitOnlyCells() { return transitOnlyCells; }
 
-		Pair<CPos, SubCell>[] ITargetableCells.TargetableCells() { return targetableCells; }
+		(CPos, SubCell)[] ITargetableCells.TargetableCells() { return targetableCells; }
 
 		void INotifyAddedToWorld.AddedToWorld(Actor self)
 		{

@@ -9,7 +9,6 @@
  */
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Graphics;
@@ -19,12 +18,12 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("This actor will remain visible (but not updated visually) under fog, once discovered.")]
-	public class FrozenUnderFogInfo : ITraitInfo, Requires<BuildingInfo>, IDefaultVisibilityInfo
+	public class FrozenUnderFogInfo : TraitInfo, Requires<BuildingInfo>, IDefaultVisibilityInfo
 	{
 		[Desc("Players with these stances can always see the actor.")]
 		public readonly Stance AlwaysVisibleStances = Stance.Ally;
 
-		public object Create(ActorInitializer init) { return new FrozenUnderFog(init, this); }
+		public override object Create(ActorInitializer init) { return new FrozenUnderFog(init, this); }
 	}
 
 	public class FrozenUnderFog : ICreatesFrozenActors, IRenderModifier, IDefaultVisibility, ITick, ITickRender, ISync, INotifyCreated, INotifyOwnerChanged, INotifyActorDisposing
@@ -195,5 +194,5 @@ namespace OpenRA.Mods.Common.Traits
 		}
 	}
 
-	public class HiddenUnderFogInit : IActorInit { }
+	public class HiddenUnderFogInit : RuntimeFlagInit, ISingleInstanceInit { }
 }

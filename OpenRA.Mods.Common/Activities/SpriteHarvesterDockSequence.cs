@@ -9,7 +9,6 @@
  */
 #endregion
 
-using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Traits.Render;
 
@@ -20,7 +19,7 @@ namespace OpenRA.Mods.Common.Activities
 		readonly WithSpriteBody wsb;
 		readonly WithDockingAnimationInfo wda;
 
-		public SpriteHarvesterDockSequence(Actor self, Actor refinery, int dockAngle, bool isDragRequired, WVec dragOffset, int dragLength)
+		public SpriteHarvesterDockSequence(Actor self, Actor refinery, WAngle dockAngle, bool isDragRequired, WVec dragOffset, int dragLength)
 			: base(self, refinery, dockAngle, isDragRequired, dragOffset, dragLength)
 		{
 			wsb = self.Trait<WithSpriteBody>();

@@ -179,13 +179,14 @@ namespace OpenRA
 				System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 			}
 
-			class MultipleEnumerator : IEnumerator<T>
+			struct MultipleEnumerator : IEnumerator<T>
 			{
 				readonly List<Actor> actors;
 				readonly List<T> traits;
 				readonly uint actor;
 				int index;
 				public MultipleEnumerator(TraitContainer<T> container, uint actor)
+					: this()
 				{
 					actors = container.actors;
 					traits = container.traits;
@@ -213,10 +214,11 @@ namespace OpenRA
 				Actor last = null;
 				for (var i = 0; i < actors.Count; i++)
 				{
-					if (actors[i] == last)
+					var current = actors[i];
+					if (current == last)
 						continue;
-					yield return actors[i];
-					last = actors[i];
+					yield return current;
+					last = current;
 				}
 			}
 
@@ -227,14 +229,15 @@ namespace OpenRA
 
 				for (var i = 0; i < actors.Count; i++)
 				{
-					if (actors[i] == last || !predicate(traits[i]))
+					var current = actors[i];
+					if (current == last || !predicate(traits[i]))
 						continue;
-					yield return actors[i];
-					last = actors[i];
+					yield return current;
+					last = current;
 				}
 			}
 
-			class AllEnumerable : IEnumerable<TraitPair<T>>
+			struct AllEnumerable : IEnumerable<TraitPair<T>>
 			{
 				readonly TraitContainer<T> container;
 				public AllEnumerable(TraitContainer<T> container) { this.container = container; }
@@ -242,12 +245,13 @@ namespace OpenRA
 				System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return GetEnumerator(); }
 			}
 
-			class AllEnumerator : IEnumerator<TraitPair<T>>
+			struct AllEnumerator : IEnumerator<TraitPair<T>>
 			{
 				readonly List<Actor> actors;
 				readonly List<T> traits;
 				int index;
 				public AllEnumerator(TraitContainer<T> container)
+					: this()
 				{
 					actors = container.actors;
 					traits = container.traits;
