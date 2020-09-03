@@ -8,7 +8,9 @@ DPOD:
 		Name: Drop Pod
 	Aircraft:
 		IdleBehavior: Land
-		TurnSpeed: 5
+		Pitch: 0
+		Roll: 0
+		TurnSpeed: 20
 		Speed: 149
 		InitialFacing: 0
 	Health:
@@ -35,6 +37,52 @@ DPOD:
 		EmptySequence: pip-ammoempty
 		Palette: pips
 
+DPOD2:
+	Inherits@2: ^ExistsInWorld
+	Valued:
+		Cost: 10
+	Tooltip:
+		Name: Drop Pod
+	Health:
+		HP: 6000
+	Armor:
+		Type: Light
+	Aircraft:
+		TurnSpeed: 20
+		Speed: 300
+		CruiseAltitude: 16c0
+		MaximumPitch: 110
+		LandableTerrainTypes: Clear, Road, Rail, DirtRoad, Rough
+	HiddenUnderFog:
+		Type: CenterPosition
+	BodyOrientation:
+		UseClassicPerspectiveFudge: False
+	RenderSprites:
+		Image: pod
+	WithFacingSpriteBody:
+	QuantizeFacingsFromSequence:
+	HitShape:
+	Interactable:
+	WithShadow:
+	SmokeTrailWhenDamaged:
+		Sprite: largesmoke
+		MinDamage: Undamaged
+	FallsToEarth:
+		Explosion: DropPodExplode
+		Moves: true
+		Velocity: 768
+		MaximumSpinSpeed: 0
+
+DPOD2E1:
+	Inherits: DPOD2
+	SpawnActorOnDeath:
+		Actor: E1R3
+
+DPOD2E2:
+	Inherits: DPOD2
+	SpawnActorOnDeath:
+		Actor: E2R3
+
 DSHP:
 	Inherits: ^Aircraft
 	Inherits@CARGOPIPS: ^CargoPips
@@ -46,7 +94,9 @@ DSHP:
 		AddToArmyValue: true
 	Aircraft:
 		IdleBehavior: Land
-		TurnSpeed: 5
+		Pitch: 0
+		Roll: 0
+		TurnSpeed: 20
 		Speed: 168
 		InitialFacing: 0
 		TakeoffSounds: dropup1.aud
@@ -88,7 +138,7 @@ ORCA:
 	Selectable:
 		Bounds: 30,24
 	Aircraft:
-		TurnSpeed: 5
+		TurnSpeed: 20
 		Speed: 186
 		TakeoffSounds: orcaup1.aud
 		LandingSounds: orcadwn1.aud
@@ -150,8 +200,10 @@ ORCAB:
 		Bounds: 30,24
 	Aircraft:
 		CruiseAltitude: 5c512
-		TurnSpeed: 3
+		TurnSpeed: 12
+		IdleTurnSpeed: 4
 		Speed: 96
+		IdleSpeed: 72
 		CruisingCondition: cruising
 		TakeoffSounds: orcaup1.aud
 		LandingSounds: orcadwn1.aud
@@ -212,7 +264,7 @@ ORCATRAN:
 		Prerequisites: ~disabled
 	RenderSprites:
 	Aircraft:
-		TurnSpeed: 5
+		TurnSpeed: 20
 		Speed: 84
 		InitialFacing: 0
 		LandableTerrainTypes: Clear, Road, Rail, DirtRoad, Rough, Tiberium, BlueTiberium, Veins
@@ -254,9 +306,11 @@ TRNSPORT:
 		Prerequisites: ~gahpad, gadept
 		Description: VTOL aircraft capable of lifting\nand transporting vehicles.\n  Unarmed
 	Aircraft:
-		TurnSpeed: 5
+		TurnSpeed: 20
 		Speed: 149
 		InitialFacing: 0
+		Pitch: 0
+		Roll: 0
 		TakeoffSounds: dropup1.aud
 		LandingSounds: dropdwn1.aud
 	Carryall:
@@ -302,8 +356,10 @@ SCRIN:
 		VoiceSet: Scrin
 	Aircraft:
 		CruiseAltitude: 5c0
-		TurnSpeed: 3
-		Speed: 168
+		TurnSpeed: 15
+		Speed: 200
+		IdleTurnSpeed: 6
+		IdleSpeed: 100
 		TakeoffSounds: dropup1.aud
 		LandingSounds: dropdwn1.aud
 		CanHover: false
@@ -364,7 +420,11 @@ APACHE:
 	Selectable:
 		Bounds: 30,24
 	Aircraft:
-		TurnSpeed: 5
+		Pitch: -32
+		PitchSpeed: 8
+		Roll: 16
+		RollSpeed: 8
+		TurnSpeed: 20
 		Speed: 130
 		CanSlide: false
 		TakeOffOnResupply: true
@@ -412,6 +472,9 @@ APACHE:
 		FullSequence: pip-ammo
 		EmptySequence: pip-ammoempty
 		Palette: pips
+	WithShadow:
+	WithVoxelBody:
+		ShowShadow: False
 
 HUNTER:
 	Inherits@2: ^ExistsInWorld
@@ -424,8 +487,10 @@ HUNTER:
 	Armor:
 		Type: Light
 	Aircraft:
-		TurnSpeed: 16
+		TurnSpeed: 64
 		Speed: 355
+		Pitch: 0
+		Roll: 0
 		CruiseAltitude: 3c128
 		CruisingCondition: cruising
 		MoveIntoShroud: true

@@ -12,7 +12,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Graphics;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Primitives;
 using OpenRA.Widgets;
@@ -28,8 +27,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		public ColorPickerLogic(Widget widget, ModData modData, World world, Color initialColor, string initialFaction, Action<Color> onChange,
 			Dictionary<string, MiniYaml> logicArgs)
 		{
-			string actorType;
-			if (initialFaction == null || !ChromeMetrics.TryGet("ColorPickerActorType-" + initialFaction, out actorType))
+			if (initialFaction == null || !ChromeMetrics.TryGet("ColorPickerActorType-" + initialFaction, out string actorType))
 				actorType = ChromeMetrics.Get<string>("ColorPickerActorType");
 
 			var preview = widget.GetOrNull<ActorPreviewWidget>("PREVIEW");
@@ -42,8 +40,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 				foreach (var o in api.ActorPreviewInits(actor, ActorPreviewType.ColorPicker))
 					td.Add(o);
 
-			if (preview != null)
-				preview.SetPreview(actor, td);
+			preview?.SetPreview(actor, td);
 
 			var hueSlider = widget.Get<SliderWidget>("HUE");
 			var mixer = widget.Get<ColorMixerWidget>("MIXER");
@@ -72,7 +69,14 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			mixer.SetPaletteRange(validator.HsvSaturationRange[0], validator.HsvSaturationRange[1], validator.HsvValueRange[0], validator.HsvValueRange[1]);
 			mixer.Set(initialColor);
 			hueSlider.Value = HueFromColor(initialColor);
-			onChange(mixer.Color);
+
+			// HACK: the value returned from the color mixer will generally not
+			// be equal to the given initialColor due to its internal RGB -> HSL -> RGB
+			// conversion. This conversion can sometimes convert a valid initial value
+			// into an invalid (too close to terrain / another player) color.
+			// We use the original colour here instead of the mixer color to make sure
+			// that we keep the player's previous colour value if they don't change anything
+			onChange(initialColor);
 
 			// Setup tab controls
 			var mixerTab = widget.Get("MIXER_TAB");
@@ -97,8 +101,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			var palettePresetRows = 2;
 			var paletteCustomRows = 1;
 
-			MiniYaml yaml;
-			if (logicArgs.TryGetValue("PaletteColumns", out yaml))
+			if (logicArgs.TryGetValue("PaletteColumns", out var yaml))
 				if (!int.TryParse(yaml.Value, out paletteCols))
 					throw new YamlException("Invalid value for PaletteColumns: {0}".F(yaml.Value));
 			if (logicArgs.TryGetValue("PalettePresetRows", out yaml))
@@ -183,9 +186,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 		static float HueFromColor(Color c)
 		{
-			float h, s, v;
-			int a;
-			c.ToAhsv(out a, out h, out s, out v);
+			c.ToAhsv(out _, out var h, out _, out _);
 			return h;
 		}
 

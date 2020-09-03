@@ -9,20 +9,18 @@
  */
 #endregion
 
-using System.Collections.Generic;
-using System.Linq;
 using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("Adds capacity to a player's harvested resource limit.")]
-	public class StoresResourcesInfo : ITraitInfo
+	public class StoresResourcesInfo : TraitInfo
 	{
 		[FieldLoader.Require]
 		public readonly int Capacity = 0;
 
-		public object Create(ActorInitializer init) { return new StoresResources(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new StoresResources(init.Self, this); }
 	}
 
 	public class StoresResources : INotifyOwnerChanged, INotifyCapture, IStoreResources, ISync, INotifyKilled, INotifyAddedToWorld, INotifyRemovedFromWorld

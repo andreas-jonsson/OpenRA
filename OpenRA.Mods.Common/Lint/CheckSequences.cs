@@ -53,7 +53,7 @@ namespace OpenRA.Mods.Common.Lint
 					}
 				}
 
-				foreach (var traitInfo in actorInfo.Value.TraitInfos<ITraitInfo>())
+				foreach (var traitInfo in actorInfo.Value.TraitInfos<TraitInfo>())
 				{
 					var fields = traitInfo.GetType().GetFields();
 					foreach (var field in fields)
@@ -82,7 +82,18 @@ namespace OpenRA.Mods.Common.Lint
 											{
 												if (string.IsNullOrEmpty(imageOverride))
 												{
-													emitWarning("Custom sprite image of actor {0} is null.".F(actorInfo.Value.Name));
+													if (!sequenceReference.ActorNameFallback)
+													{
+														emitWarning("Custom sprite image of actor {0} is null and there is no fallback.".F(actorInfo.Value.Name));
+														continue;
+													}
+
+													foreach (var sequenceProvider in sequenceProviders)
+													{
+														var image = renderInfo.GetImage(actorInfo.Value, sequenceProvider, faction);
+														CheckDefinitions(image, sequenceReference, actorInfo, sequence, faction, field, traitInfo);
+													}
+
 													continue;
 												}
 
@@ -152,7 +163,7 @@ namespace OpenRA.Mods.Common.Lint
 		}
 
 		void CheckDefinitions(string image, SequenceReferenceAttribute sequenceReference,
-			KeyValuePair<string, ActorInfo> actorInfo, string sequence, string faction, FieldInfo field, ITraitInfo traitInfo)
+			KeyValuePair<string, ActorInfo> actorInfo, string sequence, string faction, FieldInfo field, TraitInfo traitInfo)
 		{
 			var definitions = sequenceDefinitions.FirstOrDefault(n => n.Key == image.ToLowerInvariant());
 			if (definitions != null)

@@ -89,8 +89,7 @@ namespace OpenRA
 				{
 					renderPlayer = value;
 
-					if (RenderPlayerChanged != null)
-						RenderPlayerChanged(value);
+					RenderPlayerChanged?.Invoke(value);
 				}
 			}
 		}
@@ -159,8 +158,7 @@ namespace OpenRA
 			set
 			{
 				Sync.AssertUnsynced("The current order generator may not be changed from synced code");
-				if (orderGenerator != null)
-					orderGenerator.Deactivate();
+				orderGenerator?.Deactivate();
 
 				orderGenerator = value;
 			}
@@ -334,13 +332,15 @@ namespace OpenRA
 			return CreateActor(true, name, initDict);
 		}
 
+		public Actor CreateActor(bool addToWorld, ActorReference reference)
+		{
+			return CreateActor(addToWorld, reference.Type, reference.InitDict);
+		}
+
 		public Actor CreateActor(bool addToWorld, string name, TypeDictionary initDict)
 		{
 			var a = new Actor(this, name, initDict);
-			a.Created();
-			if (addToWorld)
-				Add(a);
-
+			a.Initialize(addToWorld);
 			return a;
 		}
 
@@ -484,8 +484,7 @@ namespace OpenRA
 
 		public Actor GetActorById(uint actorId)
 		{
-			Actor a;
-			if (actors.TryGetValue(actorId, out a))
+			if (actors.TryGetValue(actorId, out var a))
 				return a;
 			return null;
 		}
@@ -580,8 +579,7 @@ namespace OpenRA
 		{
 			Disposing = true;
 
-			if (OrderGenerator != null)
-				OrderGenerator.Deactivate();
+			OrderGenerator?.Deactivate();
 
 			frameEndActions.Clear();
 

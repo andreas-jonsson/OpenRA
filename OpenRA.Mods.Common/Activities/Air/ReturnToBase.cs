@@ -9,7 +9,6 @@
  */
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Activities;
@@ -26,7 +25,7 @@ namespace OpenRA.Mods.Common.Activities
 		readonly Rearmable rearmable;
 		readonly bool alwaysLand;
 		Actor dest;
-		int facing = -1;
+		WAngle? facing;
 
 		public ReturnToBase(Actor self, Actor dest = null, bool alwaysLand = false)
 		{

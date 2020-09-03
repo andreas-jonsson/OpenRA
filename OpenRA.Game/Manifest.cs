@@ -52,7 +52,7 @@ namespace OpenRA
 	}
 
 	/// <summary> Describes what is to be loaded in order to run a mod. </summary>
-	public class Manifest
+	public class Manifest : IDisposable
 	{
 		public readonly string Id;
 		public readonly IReadOnlyPackage Package;
@@ -96,8 +96,7 @@ namespace OpenRA
 			// TODO: Use fieldloader
 			MapFolders = YamlDictionary(yaml, "MapFolders");
 
-			MiniYaml packages;
-			if (yaml.TryGetValue("Packages", out packages))
+			if (yaml.TryGetValue("Packages", out var packages))
 				Packages = packages.ToDictionary(x => x.Value).AsReadOnly();
 
 			Rules = YamlList(yaml, "Rules");
@@ -217,9 +216,8 @@ namespace OpenRA
 		/// </summary>
 		public T Get<T>(ObjectCreator oc) where T : IGlobalModData
 		{
-			MiniYaml data;
 			var t = typeof(T);
-			if (!yaml.TryGetValue(t.Name, out data))
+			if (!yaml.TryGetValue(t.Name, out var data))
 			{
 				// Lazily create the default values if not explicitly defined.
 				return (T)oc.CreateBasic(t);
@@ -240,6 +238,15 @@ namespace OpenRA
 			}
 
 			return (T)module;
+		}
+
+		public void Dispose()
+		{
+			foreach (var module in modules)
+			{
+				var disposableModule = module as IDisposable;
+				disposableModule?.Dispose();
+			}
 		}
 	}
 }

@@ -9,10 +9,8 @@
  */
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Activities;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Orders;
 using OpenRA.Primitives;
@@ -35,6 +33,12 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("Require the force-move modifier to display the move cursor.")]
 		public readonly bool RequiresForceMove = false;
+
+		[Desc("Cursor to display when able to land at target building.")]
+		public readonly string EnterCursor = "enter";
+
+		[Desc("Cursor to display when unable to land at target building.")]
+		public readonly string EnterBlockedCursor = "enter-blocked";
 
 		public override object Create(ActorInitializer init) { return new TransformsIntoAircraft(init, this); }
 	}
@@ -62,7 +66,12 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				if (!IsTraitDisabled)
 				{
-					yield return new EnterAlliedActorTargeter<BuildingInfo>("Enter", 5, AircraftCanEnter,
+					yield return new EnterAlliedActorTargeter<BuildingInfo>(
+						"Enter",
+						5,
+						Info.EnterCursor,
+						Info.EnterBlockedCursor,
+						AircraftCanEnter,
 						target => Reservable.IsAvailableFor(target, self));
 
 					yield return new AircraftMoveOrderTargeter(self, this);
@@ -122,8 +131,8 @@ namespace OpenRA.Mods.Common.Traits
 
 			// Manually manage the inner activity queue
 			var activity = currentTransform ?? transform.GetTransformActivity(self);
-			if (!order.Queued && activity.NextActivity != null)
-				activity.NextActivity.Cancel(self);
+			if (!order.Queued)
+				activity.NextActivity?.Cancel(self);
 
 			activity.Queue(new IssueOrderAfterTransform(order.OrderString, order.Target, Color.Green));
 

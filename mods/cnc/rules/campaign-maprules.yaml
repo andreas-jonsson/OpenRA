@@ -27,6 +27,7 @@ Player:
 	-ConquestVictoryConditions:
 	MissionObjectives:
 		EarlyGameOver: true
+		GameOverDelay: 3000
 	Shroud:
 		FogCheckboxLocked: True
 		FogCheckboxEnabled: True
@@ -62,6 +63,17 @@ airstrike.proxy:
 		ClockSequence: clock
 		CircleSequence: circles
 		SupportPowerPaletteOrder: 10
+
+MoneyCrate:
+	Inherits: ^Crate
+	Tooltip:
+		Name: Money Crate
+	GiveCashCrateAction:
+		Amount: 2000
+		Sequence: dollar
+		UseCashTick: true
+	RenderSprites:
+		Image: wcrate
 
 TRUCK:
 	Buildable:

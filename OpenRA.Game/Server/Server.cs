@@ -18,7 +18,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using OpenRA.Graphics;
 using OpenRA.Network;
 using OpenRA.Primitives;
 using OpenRA.Support;
@@ -43,8 +42,6 @@ namespace OpenRA.Server
 	{
 		public readonly string TwoHumansRequiredText = "This server requires at least two human players to start a match.";
 
-		public readonly IPAddress Ip;
-		public readonly int Port;
 		public readonly MersenneTwister Random = new MersenneTwister();
 		public readonly ServerType Type;
 
@@ -64,7 +61,7 @@ namespace OpenRA.Server
 		public GameSave GameSave = null;
 
 		readonly int randomSeed;
-		readonly TcpListener listener;
+		readonly List<TcpListener> listeners = new List<TcpListener>();
 		readonly TypeDictionary serverTraits = new TypeDictionary();
 		readonly PlayerDatabase playerDatabase;
 
@@ -102,8 +99,7 @@ namespace OpenRA.Server
 			// Non-blocking sends are free to send only part of the data
 			while (start < length)
 			{
-				SocketError error;
-				var sent = s.Send(data, start, length - start, SocketFlags.None, out error);
+				var sent = s.Send(data, start, length - start, SocketFlags.None, out var error);
 				if (error == SocketError.WouldBlock)
 				{
 					Log.Write("server", "Non-blocking send of {0} bytes failed. Falling back to blocking send.", length - start);
@@ -129,15 +125,43 @@ namespace OpenRA.Server
 				t.GameEnded(this);
 		}
 
-		public Server(IPEndPoint endpoint, ServerSettings settings, ModData modData, ServerType type)
+		public Server(List<IPEndPoint> endpoints, ServerSettings settings, ModData modData, ServerType type)
 		{
 			Log.AddChannel("server", "server.log", true);
 
-			listener = new TcpListener(endpoint);
-			listener.Start();
-			var localEndpoint = (IPEndPoint)listener.LocalEndpoint;
-			Ip = localEndpoint.Address;
-			Port = localEndpoint.Port;
+			SocketException lastException = null;
+			var checkReadServer = new List<Socket>();
+			foreach (var endpoint in endpoints)
+			{
+				var listener = new TcpListener(endpoint);
+				try
+				{
+					try
+					{
+						listener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, 1);
+					}
+					catch (Exception ex)
+					{
+						if (ex is SocketException || ex is ArgumentException)
+							Log.Write("server", "Failed to set socket option on {0}: {1}", endpoint.ToString(), ex.Message);
+						else
+							throw;
+					}
+
+					listener.Start();
+					listeners.Add(listener);
+					checkReadServer.Add(listener.Server);
+				}
+				catch (SocketException ex)
+				{
+					lastException = ex;
+					Log.Write("server", "Failed to listen on {0}: {1}", endpoint.ToString(), ex.Message);
+				}
+			}
+
+			if (listeners.Count == 0)
+				throw lastException;
+
 			Type = type;
 			Settings = settings;
 
@@ -149,7 +173,8 @@ namespace OpenRA.Server
 
 			randomSeed = (int)DateTime.Now.ToBinary();
 
-			GeoIP.Initialize(settings.GeoIPDatabase);
+			if (type != ServerType.Local && settings.EnableGeoIP)
+				GeoIP.Initialize();
 
 			if (UPnP.Status == UPnPStatus.Enabled)
 				UPnP.ForwardPort(Settings.ListenPort, Settings.ListenPort).Wait();
@@ -185,7 +210,7 @@ namespace OpenRA.Server
 				{
 					var checkRead = new List<Socket>();
 					if (State == ServerState.WaitingPlayers)
-						checkRead.Add(listener.Server);
+						checkRead.AddRange(checkReadServer);
 
 					checkRead.AddRange(Conns.Select(c => c.Socket));
 					checkRead.AddRange(PreConns.Select(c => c.Socket));
@@ -204,9 +229,10 @@ namespace OpenRA.Server
 
 					foreach (var s in checkRead)
 					{
-						if (s == listener.Server)
+						var serverIndex = checkReadServer.IndexOf(s);
+						if (serverIndex >= 0)
 						{
-							AcceptConnection();
+							AcceptConnection(listeners[serverIndex]);
 							continue;
 						}
 
@@ -218,8 +244,7 @@ namespace OpenRA.Server
 						}
 
 						var conn = Conns.SingleOrDefault(c => c.Socket == s);
-						if (conn != null)
-							conn.ReadData(this);
+						conn?.ReadData(this);
 					}
 
 					delayedActions.PerformActions(0);
@@ -245,9 +270,14 @@ namespace OpenRA.Server
 
 				PreConns.Clear();
 				Conns.Clear();
-				try { listener.Stop(); }
-				catch { }
-			}) { IsBackground = true }.Start();
+
+				foreach (var listener in listeners)
+				{
+					try { listener.Stop(); }
+					catch { }
+				}
+			})
+			{ IsBackground = true }.Start();
 		}
 
 		int nextPlayerIndex;
@@ -256,7 +286,7 @@ namespace OpenRA.Server
 			return nextPlayerIndex++;
 		}
 
-		void AcceptConnection()
+		void AcceptConnection(TcpListener listener)
 		{
 			Socket newSocket;
 
@@ -348,7 +378,7 @@ namespace OpenRA.Server
 				{
 					Name = OpenRA.Settings.SanitizedPlayerName(handshake.Client.Name),
 					IPAddress = ipAddress.ToString(),
-					AnonymizedIPAddress = Settings.ShareAnonymizedIPs ? Session.AnonymizeIP(ipAddress) : null,
+					AnonymizedIPAddress = Type != ServerType.Local && Settings.ShareAnonymizedIPs ? Session.AnonymizeIP(ipAddress) : null,
 					Location = GeoIP.LookupCountry(ipAddress),
 					Index = newConn.PlayerIndex,
 					PreferredColor = handshake.Client.PreferredColor,
@@ -498,10 +528,16 @@ namespace OpenRA.Server
 											profile.ProfileName, profile.ProfileID);
 									}
 									else if (profile.KeyRevoked)
+									{
+										profile = null;
 										Log.Write("server", "{0} failed to authenticate as {1} (key revoked)", newConn.Socket.RemoteEndPoint, handshake.Fingerprint);
+									}
 									else
+									{
+										profile = null;
 										Log.Write("server", "{0} failed to authenticate as {1} (signature verification failed)",
 											newConn.Socket.RemoteEndPoint, handshake.Fingerprint);
+									}
 								}
 								else
 									Log.Write("server", "{0} failed to authenticate as {1} (invalid server response: `{2}` is not `Player`)",
@@ -678,8 +714,7 @@ namespace OpenRA.Server
 					break;
 				case "Pong":
 					{
-						long pingSent;
-						if (!OpenRA.Exts.TryParseInt64Invariant(o.TargetString, out pingSent))
+						if (!OpenRA.Exts.TryParseInt64Invariant(o.TargetString, out var pingSent))
 						{
 							Log.Write("server", "Invalid order pong payload: {0}", o.TargetString);
 							break;
@@ -949,7 +984,8 @@ namespace OpenRA.Server
 
 		public void StartGame()
 		{
-			listener.Stop();
+			foreach (var listener in listeners)
+				listener.Stop();
 
 			Console.WriteLine("[{0}] Game started", DateTime.Now.ToString(Settings.TimestampFormat));
 
@@ -977,7 +1013,7 @@ namespace OpenRA.Server
 
 			foreach (var c in Conns)
 				foreach (var d in Conns)
-					DispatchOrdersToClient(c, d.PlayerIndex, 0x7FFFFFFF, new[] { (byte)OrderType.Disconnect });
+					DispatchOrdersToClient(c, d.PlayerIndex, int.MaxValue, new[] { (byte)OrderType.Disconnect });
 
 			if (GameSave == null && LobbyInfo.GlobalSettings.GameSavesEnabled)
 				GameSave = new GameSave();
@@ -1010,6 +1046,23 @@ namespace OpenRA.Server
 						DispatchOrdersToClient(c, client, frame, data);
 				});
 			}
+		}
+
+		public ConnectionTarget GetEndpointForLocalConnection()
+		{
+			var endpoints = new List<DnsEndPoint>();
+			foreach (var listener in listeners)
+			{
+				var endpoint = (IPEndPoint)listener.LocalEndpoint;
+				if (IPAddress.IPv6Any.Equals(endpoint.Address))
+					endpoints.Add(new DnsEndPoint(IPAddress.IPv6Loopback.ToString(), endpoint.Port));
+				else if (IPAddress.Any.Equals(endpoint.Address))
+					endpoints.Add(new DnsEndPoint(IPAddress.Loopback.ToString(), endpoint.Port));
+				else
+					endpoints.Add(new DnsEndPoint(endpoint.Address.ToString(), endpoint.Port));
+			}
+
+			return new ConnectionTarget(endpoints);
 		}
 	}
 }

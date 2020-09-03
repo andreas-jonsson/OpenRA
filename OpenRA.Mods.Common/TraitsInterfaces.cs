@@ -15,7 +15,6 @@ using OpenRA.Activities;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Graphics;
-using OpenRA.Mods.Common.Traits.Render;
 using OpenRA.Primitives;
 using OpenRA.Traits;
 
@@ -33,12 +32,12 @@ namespace OpenRA.Mods.Common.Traits
 		Repair = 2
 	}
 
-	public interface IQuantizeBodyOrientationInfo : ITraitInfo
+	public interface IQuantizeBodyOrientationInfo : ITraitInfoInterface
 	{
 		int QuantizedBodyFacings(ActorInfo ai, SequenceProvider sequenceProvider, string race);
 	}
 
-	public interface IPlaceBuildingDecorationInfo : ITraitInfo
+	public interface IPlaceBuildingDecorationInfo : ITraitInfoInterface
 	{
 		IEnumerable<IRenderable> RenderAnnotations(WorldRenderer wr, World w, ActorInfo ai, WPos centerPosition);
 	}
@@ -133,10 +132,17 @@ namespace OpenRA.Mods.Common.Traits
 	}
 
 	[RequireExplicitImplementation]
+	public interface INotifyBeingResupplied
+	{
+		void StartingResupply(Actor self, Actor host);
+		void StoppingResupply(Actor self, Actor host);
+	}
+
+	[RequireExplicitImplementation]
 	public interface INotifyPowerLevelChanged { void PowerLevelChanged(Actor self); }
+	public interface INotifySupportPower { void Charged(Actor self); void Activated(Actor self); }
 
 	public interface INotifyBuildingPlaced { void BuildingPlaced(Actor self); }
-	public interface INotifyNuke { void Launching(Actor self); }
 	public interface INotifyBurstComplete { void FiredBurst(Actor self, Target target, Armament a); }
 	public interface INotifyChat { bool OnChat(string from, string message); }
 	public interface INotifyProduction { void UnitProduced(Actor self, Actor other, CPos exit); }
@@ -151,8 +157,8 @@ namespace OpenRA.Mods.Common.Traits
 	[RequireExplicitImplementation]
 	public interface INotifyCapture { void OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner, BitSet<CaptureType> captureTypes); }
 	public interface INotifyDiscovered { void OnDiscovered(Actor self, Player discoverer, bool playNotification); }
-	public interface IRenderActorPreviewInfo : ITraitInfo { IEnumerable<IActorPreview> RenderPreview(ActorPreviewInitializer init); }
-	public interface ICruiseAltitudeInfo : ITraitInfo { WDist GetCruiseAltitude(); }
+	public interface IRenderActorPreviewInfo : ITraitInfoInterface { IEnumerable<IActorPreview> RenderPreview(ActorPreviewInitializer init); }
+	public interface ICruiseAltitudeInfo : ITraitInfoInterface { WDist GetCruiseAltitude(); }
 
 	public interface IHuskModifier { string HuskActor(Actor self); }
 
@@ -175,26 +181,6 @@ namespace OpenRA.Mods.Common.Traits
 
 	[RequireExplicitImplementation]
 	public interface INotifyExitedCargo { void OnExitedCargo(Actor self, Actor cargo); }
-
-	[RequireExplicitImplementation]
-	public interface IObservesVariablesInfo : ITraitInfo { }
-
-	public delegate void VariableObserverNotifier(Actor self, IReadOnlyDictionary<string, int> variables);
-	public struct VariableObserver
-	{
-		public VariableObserverNotifier Notifier;
-		public IEnumerable<string> Variables;
-		public VariableObserver(VariableObserverNotifier notifier, IEnumerable<string> variables)
-		{
-			Notifier = notifier;
-			Variables = variables;
-		}
-	}
-
-	public interface IObservesVariables
-	{
-		IEnumerable<VariableObserver> GetVariableObservers();
-	}
 
 	public interface INotifyHarvesterAction
 	{
@@ -224,7 +210,7 @@ namespace OpenRA.Mods.Common.Traits
 		void Infiltrating(Actor self);
 	}
 
-	public interface ITechTreePrerequisiteInfo : ITraitInfo
+	public interface ITechTreePrerequisiteInfo : ITraitInfoInterface
 	{
 		IEnumerable<string> Prerequisites(ActorInfo info);
 	}
@@ -269,7 +255,7 @@ namespace OpenRA.Mods.Common.Traits
 		void Undeploy(Actor self, bool skipMakeAnim);
 	}
 
-	public interface IAcceptResourcesInfo : ITraitInfo { }
+	public interface IAcceptResourcesInfo : ITraitInfoInterface { }
 	public interface IAcceptResources
 	{
 		void OnDock(Actor harv, DeliverResources dockOrder);
@@ -315,7 +301,7 @@ namespace OpenRA.Mods.Common.Traits
 	}
 
 	[RequireExplicitImplementation]
-	interface IWallConnector
+	public interface IWallConnector
 	{
 		bool AdjacentWallCanConnect(Actor self, CPos wallLocation, string wallType, out CVec facing);
 		void SetDirty();
@@ -343,10 +329,10 @@ namespace OpenRA.Mods.Common.Traits
 	}
 
 	[RequireExplicitImplementation]
-	public interface IProductionCostModifierInfo : ITraitInfo { int GetProductionCostModifier(TechTree techTree, string queue); }
+	public interface IProductionCostModifierInfo : ITraitInfoInterface { int GetProductionCostModifier(TechTree techTree, string queue); }
 
 	[RequireExplicitImplementation]
-	public interface IProductionTimeModifierInfo : ITraitInfo { int GetProductionTimeModifier(TechTree techTree, string queue); }
+	public interface IProductionTimeModifierInfo : ITraitInfoInterface { int GetProductionTimeModifier(TechTree techTree, string queue); }
 
 	[RequireExplicitImplementation]
 	public interface ICashTricklerModifier { int GetCashTricklerModifier(); }
@@ -419,9 +405,9 @@ namespace OpenRA.Mods.Common.Traits
 	public enum ActorPreviewType { PlaceBuilding, ColorPicker, MapEditorSidebar }
 
 	[RequireExplicitImplementation]
-	public interface IActorPreviewInitInfo : ITraitInfo
+	public interface IActorPreviewInitInfo : ITraitInfoInterface
 	{
-		IEnumerable<object> ActorPreviewInits(ActorInfo ai, ActorPreviewType type);
+		IEnumerable<ActorInit> ActorPreviewInits(ActorInfo ai, ActorPreviewType type);
 	}
 
 	public interface IMove
@@ -462,7 +448,7 @@ namespace OpenRA.Mods.Common.Traits
 
 	public interface IRadarSignature
 	{
-		void PopulateRadarSignatureCells(Actor self, List<Pair<CPos, Color>> destinationBuffer);
+		void PopulateRadarSignatureCells(Actor self, List<(CPos Cell, Color Color)> destinationBuffer);
 	}
 
 	public interface IRadarColorModifier { Color RadarColorOverride(Actor self, Color color); }
@@ -497,7 +483,7 @@ namespace OpenRA.Mods.Common.Traits
 	[RequireExplicitImplementation]
 	public interface ITargetableCells
 	{
-		Pair<CPos, SubCell>[] TargetableCells();
+		(CPos Cell, SubCell SubCell)[] TargetableCells();
 	}
 
 	[RequireExplicitImplementation]
@@ -609,6 +595,13 @@ namespace OpenRA.Mods.Common.Traits
 			GetValue = getValue;
 			OnChange = onChange;
 		}
+	}
+
+	[RequireExplicitImplementation]
+	public interface INotifyEditorPlacementInfo : ITraitInfoInterface
+	{
+		object AddedToEditor(EditorActorPreview preview, World editorWorld);
+		void RemovedFromEditor(EditorActorPreview preview, World editorWorld, object data);
 	}
 
 	[RequireExplicitImplementation]

@@ -35,20 +35,24 @@ namespace OpenRA.Platforms.Default
 			if (context == IntPtr.Zero || SDL.SDL_GL_MakeCurrent(window.Window, context) < 0)
 				throw new InvalidOperationException("Can not create OpenGL context. (Error: {0})".F(SDL.SDL_GetError()));
 
-			OpenGL.Initialize();
+			OpenGL.Initialize(window.GLProfile == GLProfile.Legacy);
+			OpenGL.CheckGLError();
 
-			uint vao;
-			OpenGL.CheckGLError();
-			OpenGL.glGenVertexArrays(1, out vao);
-			OpenGL.CheckGLError();
-			OpenGL.glBindVertexArray(vao);
-			OpenGL.CheckGLError();
+			if (OpenGL.Profile != GLProfile.Legacy)
+			{
+				OpenGL.glGenVertexArrays(1, out var vao);
+				OpenGL.CheckGLError();
+				OpenGL.glBindVertexArray(vao);
+				OpenGL.CheckGLError();
+			}
 
 			OpenGL.glEnableVertexAttribArray(Shader.VertexPosAttributeIndex);
 			OpenGL.CheckGLError();
 			OpenGL.glEnableVertexAttribArray(Shader.TexCoordAttributeIndex);
 			OpenGL.CheckGLError();
 			OpenGL.glEnableVertexAttribArray(Shader.TexMetadataAttributeIndex);
+			OpenGL.CheckGLError();
+			OpenGL.glEnableVertexAttribArray(Shader.TintAttributeIndex);
 			OpenGL.CheckGLError();
 		}
 
@@ -225,6 +229,21 @@ namespace OpenRA.Platforms.Default
 					OpenGL.glEnable(OpenGL.GL_BLEND);
 					OpenGL.CheckGLError();
 					OpenGL.glBlendFunc(OpenGL.GL_DST_COLOR, OpenGL.GL_SRC_COLOR);
+					break;
+				case BlendMode.LowAdditive:
+					OpenGL.glEnable(OpenGL.GL_BLEND);
+					OpenGL.CheckGLError();
+					OpenGL.glBlendFunc(OpenGL.GL_DST_COLOR, OpenGL.GL_ONE);
+					break;
+				case BlendMode.Screen:
+					OpenGL.glEnable(OpenGL.GL_BLEND);
+					OpenGL.CheckGLError();
+					OpenGL.glBlendFunc(OpenGL.GL_SRC_COLOR, OpenGL.GL_ONE_MINUS_SRC_COLOR);
+					break;
+				case BlendMode.Translucent:
+					OpenGL.glEnable(OpenGL.GL_BLEND);
+					OpenGL.CheckGLError();
+					OpenGL.glBlendFunc(OpenGL.GL_DST_COLOR, OpenGL.GL_ONE_MINUS_DST_COLOR);
 					break;
 			}
 

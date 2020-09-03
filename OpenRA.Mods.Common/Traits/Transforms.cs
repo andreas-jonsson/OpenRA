@@ -29,7 +29,7 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly CVec Offset = CVec.Zero;
 
 		[Desc("Facing that the actor must face before transforming.")]
-		public readonly int Facing = 96;
+		public readonly WAngle Facing = new WAngle(384);
 
 		[Desc("Sounds to play when transforming.")]
 		public readonly string[] TransformSounds = { };
@@ -70,7 +70,7 @@ namespace OpenRA.Mods.Common.Traits
 			self = init.Self;
 			actorInfo = self.World.Map.Rules.Actors[info.IntoActor];
 			buildingInfo = actorInfo.TraitInfoOrDefault<BuildingInfo>();
-			faction = init.Contains<FactionInit>() ? init.Get<FactionInit, string>() : self.Owner.Faction.InternalName;
+			faction = init.GetValue<FactionInit, string>(self.Owner.Faction.InternalName);
 		}
 
 		public string VoicePhraseForOrder(Actor self, Order order)

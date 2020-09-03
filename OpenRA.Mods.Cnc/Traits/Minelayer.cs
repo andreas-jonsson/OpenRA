@@ -12,16 +12,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OpenRA;
 using OpenRA.Graphics;
 using OpenRA.Mods.Cnc.Activities;
 using OpenRA.Mods.Common.Orders;
 using OpenRA.Mods.Common.Traits;
-using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Cnc.Traits
 {
-	public class MinelayerInfo : ITraitInfo, Requires<RearmableInfo>
+	public class MinelayerInfo : TraitInfo, Requires<RearmableInfo>
 	{
 		[ActorReference]
 		public readonly string Mine = "minv";
@@ -43,7 +43,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		[Desc("Sprite overlay to use for minefield cells hidden behind fog or shroud.")]
 		public readonly string TileUnknownName = "build-unknown";
 
-		public object Create(ActorInitializer init) { return new Minelayer(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new Minelayer(init.Self, this); }
 	}
 
 	public class Minelayer : IIssueOrder, IResolveOrder, ISync, IIssueDeployOrder, IOrderVoice, ITick
@@ -112,10 +112,14 @@ namespace OpenRA.Mods.Cnc.Traits
 				self.QueueActivity(order.Queued, new LayMines(self));
 			else if (order.OrderString == "PlaceMinefield")
 			{
+				// A different minelayer might have started laying the field without this minelayer knowing the start
+				minefieldStart = order.ExtraLocation;
+
 				var movement = self.Trait<IPositionable>();
 
 				var minefield = GetMinefieldCells(minefieldStart, cell, Info.MinefieldDepth)
-					.Where(c => movement.CanEnterCell(c, null, BlockedByActor.Immovable) || self.World.FogObscures(c))
+					.Where(c => movement.CanEnterCell(c, null, BlockedByActor.Immovable)
+						|| (!self.Owner.Shroud.IsVisible(c) && self.World.Map.Contains(c)))
 					.OrderBy(c => (c - minefieldStart).LengthSquared).ToList();
 
 				self.QueueActivity(order.Queued, new LayMines(self, minefield));
@@ -207,13 +211,14 @@ namespace OpenRA.Mods.Cnc.Traits
 				{
 					minelayers.First().World.CancelInputMode();
 					foreach (var minelayer in minelayers)
-						yield return new Order("PlaceMinefield", minelayer, Target.FromCell(world, cell), queued);
+						yield return new Order("PlaceMinefield", minelayer, Target.FromCell(world, cell), queued) { ExtraLocation = minefieldStart };
 				}
 			}
 
-			protected override void Tick(World world)
+			protected override void SelectionChanged(World world, IEnumerable<Actor> selected)
 			{
-				minelayers.RemoveAll(minelayer => !minelayer.IsInWorld || minelayer.IsDead);
+				minelayers.Clear();
+				minelayers.AddRange(selected.Where(s => s.Info.HasTraitInfo<MinelayerInfo>()));
 				if (!minelayers.Any())
 					world.CancelInputMode();
 			}
@@ -231,17 +236,19 @@ namespace OpenRA.Mods.Cnc.Traits
 					minelayers.Max(m => m.Info.TraitInfo<MinelayerInfo>().MinefieldDepth));
 
 				var movement = minelayer.Trait<IPositionable>();
+				var mobile = movement as Mobile;
 				var pal = wr.Palette(TileSet.TerrainPaletteInternalName);
 				foreach (var c in minefield)
 				{
 					var tile = tileOk;
-					if (world.FogObscures(c))
+					if (!world.Map.Contains(c))
+						tile = tileBlocked;
+					else if (world.FogObscures(c))
 						tile = tileUnknown;
-					else if (!movement.CanEnterCell(c, null, BlockedByActor.Immovable))
+					else if (!movement.CanEnterCell(c, null, BlockedByActor.Immovable) || (mobile != null && !mobile.CanStayInCell(c)))
 						tile = tileBlocked;
 
-					yield return new SpriteRenderable(tile, world.Map.CenterOfCell(c),
-						WVec.Zero, -511, pal, 1f, true);
+					yield return new SpriteRenderable(tile, world.Map.CenterOfCell(c), WVec.Zero, -511, pal, 1f, true, true);
 				}
 			}
 

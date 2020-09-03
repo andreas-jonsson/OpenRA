@@ -9,26 +9,17 @@
  */
 #endregion
 
-using System.Collections.Generic;
 using OpenRA.GameRules;
 using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Warheads
 {
-	public enum ImpactType
+	public enum ImpactActorType
 	{
 		None,
-		Ground,
-		Air,
-		TargetHit
-	}
-
-	public enum ImpactTargetType
-	{
-		NoActor,
-		ValidActor,
-		InvalidActor
+		Invalid,
+		Valid,
 	}
 
 	[Desc("Base warhead class. This can be used to derive other warheads from.")]
@@ -46,6 +37,9 @@ namespace OpenRA.Mods.Common.Warheads
 		[Desc("Can this warhead affect the actor that fired it.")]
 		public readonly bool AffectsParent = false;
 
+		[Desc("If impact is above this altitude, warheads that would affect terrain ignore terrain target types (and either do nothing or perform their own checks).")]
+		public readonly WDist AirThreshold = new WDist(128);
+
 		[Desc("Delay in ticks before applying the warhead effect.", "0 = instant (old model).")]
 		public readonly int Delay = 0;
 
@@ -54,7 +48,7 @@ namespace OpenRA.Mods.Common.Warheads
 		[Desc("The color used for this warhead's visualization in the world's `WarheadDebugOverlay` trait.")]
 		public readonly Color DebugOverlayColor = Color.Red;
 
-		public bool IsValidTarget(BitSet<TargetableType> targetTypes)
+		protected bool IsValidTarget(BitSet<TargetableType> targetTypes)
 		{
 			return ValidTargets.Overlaps(targetTypes) && !InvalidTargets.Overlaps(targetTypes);
 		}

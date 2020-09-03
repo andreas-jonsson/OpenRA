@@ -5,7 +5,6 @@
 	GivesExperience:
 		PlayerExperienceModifier: 1
 	ScriptTriggers:
-	ConditionManager:
 	RenderDebugState:
 
 ^SpriteActor:
@@ -52,10 +51,10 @@
 	ReloadDelayMultiplier@ELITE:
 		RequiresCondition: rank-elite
 		Modifier: 75
-	SelfHealing@ELITE:
+	ChangesHealth@ELITE:
 		Step: 200
 		Delay: 100
-		HealIfBelow: 100
+		StartIfBelow: 100
 		DamageCooldown: 125
 		RequiresCondition: rank-elite
 	WithDecoration@VETERAN:
@@ -502,7 +501,6 @@
 		RequiresCondition: !being-demolished
 		SellSounds: cashturn.aud
 	ScriptTriggers:
-	ConditionManager:
 	Health:
 	HitShape:
 		Type: Rectangle
@@ -557,7 +555,9 @@
 	Mobile:
 		Voice: Move
 		Speed: 71
+		AlwaysTurnInPlace: true
 		Locomotor: foot
+	TurnOnIdle:
 	Selectable:
 		DecorationBounds: 15,23,0,-9
 		Bounds: 24,24,0,-9
@@ -591,10 +591,10 @@
 	Guard:
 		Voice: Move
 	Guardable:
-	SelfHealing@HOSPITAL:
+	ChangesHealth@HOSPITAL:
 		Step: 500
 		Delay: 100
-		HealIfBelow: 100
+		StartIfBelow: 100
 		DamageCooldown: 125
 		RequiresCondition: hospitalheal
 	GrantConditionOnPrerequisite@HOSPITAL:
@@ -625,6 +625,13 @@
 		Categories: Infantry
 	GrantConditionOnTunnelLayer:
 		Condition: inside-tunnel
+	WithDecoration@UNDERGROUND:
+		RequiresCondition: inside-tunnel
+		Position: Center
+		Image: typeglyphs
+		Sequence: infantry
+		Palette: player
+		IsPlayerPalette: true
 
 ^RegularInfantryDeath:
 	WithDeathAnimation@normal:
@@ -753,7 +760,7 @@
 	Mobile:
 		PauseOnCondition: empdisable || being-captured || carried
 		Locomotor: wheeled
-		TurnSpeed: 5
+		TurnSpeed: 20
 		Voice: Move
 	Selectable:
 		Bounds: 40,24
@@ -820,6 +827,13 @@
 		Categories: Vehicle
 	GrantConditionOnTunnelLayer:
 		Condition: inside-tunnel
+	WithDecoration@UNDERGROUND:
+		RequiresCondition: inside-tunnel
+		Position: Center
+		Image: typeglyphs
+		Sequence: vehicle
+		Palette: player
+		IsPlayerPalette: true
 
 ^Tank:
 	Inherits: ^Vehicle
@@ -861,7 +875,7 @@
 		RepairActors: gadept
 		Voice: Move
 	Aircraft:
-		InitialFacing: 224
+		InitialFacing: 896
 		AirborneCondition: airborne
 		CruisingCondition: cruising
 		CruiseAltitude: 4c704
@@ -875,6 +889,10 @@
 		CanHover: true
 		CanSlide: true
 		VTOL: true
+		Pitch: -64
+		PitchSpeed: 16
+		Roll: 56
+		RollSpeed: 14
 	Voiced:
 		VoiceSet: Heli
 	HiddenUnderFog:
@@ -933,7 +951,7 @@
 	FallsToEarth:
 		Moves: true
 		Velocity: 112
-		MaximumSpinSpeed: 10
+		MaximumSpinSpeed: 40
 	HitShape:
 
 ^Visceroid:
@@ -947,7 +965,7 @@
 		Type: Light
 	Mobile:
 		Speed: 113
-		TurnSpeed: 16
+		TurnSpeed: 64
 		Locomotor: visceroid
 	Selectable:
 		Bounds: 26,26,0,-3
@@ -990,6 +1008,7 @@
 		ResourceType: Tiberium
 		Interval: 55
 	WithIdleAnimation:
+		Interval: 500, 1000
 	MapEditorData:
 		Categories: Resource spawn
 
@@ -1095,7 +1114,7 @@
 	RenderSprites:
 	WithVoxelBody:
 	Mobile:
-		TurnSpeed: 5
+		TurnSpeed: 20
 		Voice: Move
 		Speed: 113
 		PauseOnCondition: empdisable
